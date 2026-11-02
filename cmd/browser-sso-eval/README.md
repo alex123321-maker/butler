@@ -23,6 +23,11 @@ go run ./cmd/browser-sso-eval -config .cache/sso-private.json -journal .cache/ss
 ```
 
 Defaults: `-rp-listen 127.0.0.1:18098`, `-idp-listen 127.0.0.1:18099`.
+For direct HTTPS testing, supply both `-tls-cert <private-file>` and
+`-tls-key <private-file>`; both configured public origins must then use HTTPS.
+The same certificate must cover both names. Without these flags, keep TLS at
+the operator's reverse proxy. The required runtime CI uses a disposable test
+CA and fresh Linux NSS database; it never disables certificate verification.
 Configuration and journal are exclusively created; existing files are never
 overwritten. Restart with a new journal, retaining the old attempt. All live
 bindings expire after three minutes and are not restored after restart.

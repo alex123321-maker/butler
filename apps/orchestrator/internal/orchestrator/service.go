@@ -158,7 +158,7 @@ type Config struct {
 		ReadResolvedOutcome(context.Context, string, string) (actionauth.OwnerOutcomeResolution, error)
 	}
 	Credentials interface {
-		SuspendRequest(context.Context, string, string) (string, error)
+		SuspendRequest(context.Context, string, string, ...string) (string, error)
 		ResumeInteraction(context.Context, string, string) (string, error)
 	}
 	Communication CommunicationKernel

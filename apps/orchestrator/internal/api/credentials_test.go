@@ -64,7 +64,7 @@ func TestCredentialVaultOwnerAPIPrivacyLocal(t *testing.T) {
 	if _, err = pool.Exec(ctx, string(loginMigration)); err != nil {
 		t.Fatal(err)
 	}
-	for _, name := range []string{"107_browser_pages", "108_browser_page_execution", "109_browser_sso_consent"} {
+	for _, name := range []string{"107_browser_pages", "108_browser_page_execution", "109_browser_sso_consent", "110_browser_sso_use"} {
 		raw, e := os.ReadFile(filepath.Join("..", "..", "..", "..", "migrations", name+".up.sql"))
 		if e != nil {
 			t.Fatal(e)
@@ -203,8 +203,8 @@ func TestCredentialVaultOwnerAPIPrivacyLocal(t *testing.T) {
 		if answer(token.Value, true) != 200 {
 			t.Fatal("protected exact SSO answer rejected")
 		}
-		if _, e = vault.GetByAlias(ctx, r.ID); e == nil {
-			t.Fatal("SSO record became credential alias")
+		if metadata, e := vault.GetByAlias(ctx, r.ID); e != nil || len(metadata.AllowedTools) != 1 || metadata.AllowedTools[0] != browsersso.Tool {
+			t.Fatal("SSO metadata escaped its closed tool")
 		}
 	})
 	if invoke("POST", `{"action":"change_pin","pin":"123456","confirm":"123456"}`, token.Value, true).Code != 200 {

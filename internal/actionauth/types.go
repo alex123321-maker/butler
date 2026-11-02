@@ -5,6 +5,7 @@ package actionauth
 
 import (
 	"github.com/butler/butler/internal/browserpage"
+	"github.com/butler/butler/internal/browsersso"
 	"github.com/butler/butler/internal/delegation"
 	"time"
 )
@@ -35,6 +36,7 @@ type DataRef struct {
 // ActionBinding is the exact intent approved by the owner. A refreshed worker
 // lease does not change this intent, but each dispatch grant pins its live fence.
 type ActionBinding struct {
+	BrowserSSO                    *browsersso.Scope    `json:"browser_sso,omitempty"`
 	BrowserPage                   *browserpage.Binding `json:"browser_page,omitempty"`
 	BrowserScopeURL               string               `json:"browser_scope_url,omitempty"`
 	BrowserScopeEpoch             int64                `json:"browser_scope_epoch,omitempty"`

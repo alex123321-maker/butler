@@ -7,8 +7,9 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"github.com/butler/butler/internal/jsonstrict"
 	"github.com/butler/butler/internal/research"
-	"io"
+
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -164,61 +165,7 @@ func Contracts() []*toolbrokerv1.ToolContract {
 // StrictJSON checks duplicate keys as well as unknown members. Intent hashing
 // and typed decoding must never disagree about which duplicate value is used.
 func StrictJSON(raw []byte, out any) error {
-	if len(raw) > 256*1024 || !utf8.Valid(raw) {
-		return ErrDenied
-	}
-	d := json.NewDecoder(bytes.NewReader(raw))
-	var walk func(int) error
-	walk = func(depth int) error {
-		if depth > 16 {
-			return ErrDenied
-		}
-		t, e := d.Token()
-		if e != nil {
-			return e
-		}
-		if t == json.Delim('{') {
-			seen := map[string]bool{}
-			for d.More() {
-				k, e := d.Token()
-				if e != nil {
-					return e
-				}
-				s, ok := k.(string)
-				if !ok || seen[s] {
-					return ErrDenied
-				}
-				seen[s] = true
-				if e = walk(depth + 1); e != nil {
-					return e
-				}
-			}
-			_, e = d.Token()
-			return e
-		}
-		if t == json.Delim('[') {
-			for d.More() {
-				if e = walk(depth + 1); e != nil {
-					return e
-				}
-			}
-			_, e = d.Token()
-			return e
-		}
-		if _, ok := t.(json.Delim); ok {
-			return ErrDenied
-		}
-		return nil
-	}
-	if walk(0) != nil {
-		return ErrDenied
-	}
-	if _, e := d.Token(); e != io.EOF {
-		return ErrDenied
-	}
-	d = json.NewDecoder(bytes.NewReader(raw))
-	d.DisallowUnknownFields()
-	if d.Decode(out) != nil {
+	if jsonstrict.Decode(raw, out) != nil {
 		return ErrDenied
 	}
 	return nil

@@ -414,7 +414,7 @@ let vaultEpoch = 0
 let requestedID =
   typeof window === 'undefined'
     ? ''
-    : /^#credential=(creq_[a-f0-9]{64})$/.exec(window.location.hash)?.[1] || ''
+    : /^#credential=((?:creq_|ssoq_)[a-f0-9]{64})$/.exec(window.location.hash)?.[1] || ''
 const cells: HTMLInputElement[] = []
 function setCell(el: Element | ComponentPublicInstance | null, index: number) {
   if (el instanceof HTMLInputElement) cells[index] = el

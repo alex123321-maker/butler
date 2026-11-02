@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/butler/butler/internal/actionauth"
+	"github.com/butler/butler/internal/browsersso"
 	"github.com/butler/butler/internal/credentialcontrol"
 	"github.com/butler/butler/internal/credentials"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
@@ -57,6 +58,12 @@ func (e *CredentialExecutor) Execute(ctx context.Context, call *toolbrokerv1.Too
 		r, err := e.Vault.RequestStatus(ctx, p, a.RequestID)
 		if err != nil {
 			return nil, err
+		}
+		payload = map[string]any{"request": r}
+	} else if call.ToolName == browsersso.RequestTool {
+		r, e := e.Vault.CreateSSORequest(ctx, p, call.ToolCallId, a.RecordID, a.Purpose, *a.SSOScope)
+		if e != nil {
+			return nil, e
 		}
 		payload = map[string]any{"request": r}
 	} else {

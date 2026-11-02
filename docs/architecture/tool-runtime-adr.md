@@ -1,5 +1,12 @@
 # Butler — Tooling and Execution Specification
 
+`browser.sso_login` revision1 is a distinct unsafe commit protocol with
+Broker-mediated deferred fields, private RP/IdP dispatch caps, one fresh child,
+one native form POST and Go-derived `browser_sso_login_v1` RP access proof.
+Consent cannot bypass current authority, resource leases or UNKNOWN history.
+See [the bounded SSO protocol](browser-sso-protocol.md) for its supported scope
+and remaining composed/native/external acceptance.
+
 `browser.login` revision1 is a distinct unsafe commit tool, never an alias for
 click. Its private two-phase helper admits one exact native form POST and bounded
 same-origin GET redirects. Go performs independent, public-egress-guarded access

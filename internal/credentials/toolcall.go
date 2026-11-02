@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/butler/butler/internal/browserauth"
+	"github.com/butler/butler/internal/browsersso"
 	"sort"
 	"strings"
 
@@ -40,7 +41,7 @@ func (b *ToolCallBroker) ApprovedLocalUse(ctx context.Context, call *toolbrokerv
 }
 
 func (b *ToolCallBroker) ApprovedLoginUse(ctx context.Context, call *toolbrokerv1.ToolCall) bool {
-	if b == nil || call == nil || call.ToolName != browserauth.Tool {
+	if b == nil || call == nil || call.ToolName != browserauth.Tool && call.ToolName != browsersso.Tool {
 		return false
 	}
 	checker, ok := b.resolver.(interface {
@@ -162,6 +163,13 @@ func (b *ToolCallBroker) resolve(ctx context.Context, call *toolbrokerv1.ToolCal
 }
 
 func toolExecutionMetadata(call *toolbrokerv1.ToolCall) (targetURL string, mutating bool) {
+	if call != nil && call.ToolName == browsersso.Tool {
+		a, e := browsersso.Parse(call.ArgsJson)
+		if e != nil {
+			return "", true
+		}
+		return a.IdPURL, true
+	}
 	if call == nil || strings.TrimSpace(call.GetArgsJson()) == "" {
 		return "", false
 	}

@@ -135,7 +135,15 @@ identities. Owner frames and inputs bind the selected page/document; selection
 alone grants no agent authority. Legacy single-page mode remains separate.
 See [the execution contract](../../docs/architecture/browser-pages-execution.md)
 and required `scripts/dev/browser-page-execution-tests.sh`. This stage does not
-qualify federated login or autonomous recovery from a managed-page UNKNOWN.
+qualify native/external federated login or autonomous recovery from a managed-page UNKNOWN.
+
+The separate `browser.sso_login` revision1 requires Broker-approved references
+and private RP identity, current RP/IdP path caps and expiry. Its finite private
+plan/submit protocol allows one fresh child and one compiled native IdP POST,
+then freezes/closes the child and independently probes the protected RP with
+authenticated and anonymous GETs. Only Go emits `browser_sso_login_v1` proof.
+Required HTTPS checks: `scripts/dev/browser-sso-execution-tests.sh`; composed
+kernel, native delivery and Google acceptance remain separate evidence gates.
 
 `browser.page_freeze_snapshot` revision1 freezes the whole managed context and
 returns a fresh observation of only its exact page/document. It retains normal

@@ -1,5 +1,13 @@
 # Tool Broker
 
+With the vault configured, `credentials.request_sso_login` and `browser.sso_login`
+provide a separate RP/IdP path. All destinations require current authority; the
+private dispatch pins exact RP identity, path caps and expiry. Migration110
+reserves one consent to one call. The approved call covers one POST and
+Go-verified RP access, without a second generic submit approval. Generic page
+tools cannot use SSO references. See
+[the SSO contract](../../docs/architecture/browser-sso-protocol.md).
+
 Migration107 adds the private `browsercontrol` page ledger with exact
 page/document/version references, context-wide owner epochs, bounded identities
 and retained closed/lost records. It is not wired to model tools, dispatch or

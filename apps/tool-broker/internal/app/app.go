@@ -18,6 +18,7 @@ import (
 	"github.com/butler/butler/apps/tool-broker/internal/runtimeclient"
 	"github.com/butler/butler/internal/actionauth"
 	"github.com/butler/butler/internal/browsercontrol"
+	"github.com/butler/butler/internal/browsersso"
 	"github.com/butler/butler/internal/budget"
 	"github.com/butler/butler/internal/communicationcontrol"
 	"github.com/butler/butler/internal/config"
@@ -112,6 +113,10 @@ func newApp(ctx context.Context, communicationEndpoint string, ownerProfile *com
 		}
 		credentialVault, _ = credentials.VaultFromEnvironment(postgres.Pool())
 		if credentialVault != nil {
+			if err = registryStore.RegisterOwned([]*toolbrokerv1.ToolContract{browsersso.Contract()}); err != nil {
+				postgres.Close()
+				return nil, err
+			}
 			credentialResolver = credentials.NewToolCallBroker(credentials.NewBroker(credentialVault, credentials.NewAuditStore(postgres.Pool())), credentialVault)
 		}
 	}

@@ -246,6 +246,9 @@ func (r *PlaywrightRunner) Run(ctx context.Context, req Request) (Result, error)
 	if req.ToolName == "browser.login" {
 		return r.login(ctx, req)
 	}
+	if req.ToolName == "browser.sso_login" {
+		return r.sso(ctx, req)
+	}
 	return r.exchange(ctx, req)
 }
 

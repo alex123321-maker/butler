@@ -3,8 +3,10 @@
 Migration109 adds a separate retained SSO consent ledger and protected RP/IdP
 owner card. Creation and approval pin the exact RP page, context epoch, account
 and current Run/Task revisions. `ssoq_` IDs cannot resolve fields through legacy
-login/preparation. This foundation installs no SSO tool or executor; the next
-Broker/runtime gate is specified in `docs/architecture/browser-sso-protocol.md`.
+login/preparation. Migration110 adds a retained one-call SSO use claim and
+separate notice/live-state tracking. Only the exact approved `browser.sso_login`
+can resolve the fields privately; every field rechecks live principal, account,
+RP page and epoch. See `docs/architecture/browser-sso-protocol.md`.
 `TestVaultSSOPostgresIntegration` covers current-scope rejection, protected
 decision concurrency, metadata privacy, legacy-release denial and retention.
 

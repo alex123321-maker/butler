@@ -11,6 +11,7 @@ import (
 	"github.com/butler/butler/internal/actionauth"
 	"github.com/butler/butler/internal/browserauth"
 	"github.com/butler/butler/internal/browserpage"
+	"github.com/butler/butler/internal/browsersso"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -118,6 +119,9 @@ func (s *Store) Record(ctx context.Context, call *toolbrokerv1.ToolCall, grant a
 	if result.GetRunId() != call.GetRunId() || result.GetToolCallId() != call.GetToolCallId() || result.GetToolName() != call.GetToolName() {
 		return ErrDenied
 	}
+	if call.ToolName == browsersso.Tool {
+		return s.recordSSO(ctx, call, grant.Binding, result)
+	}
 	if browserpage.IsTool(call.ToolName) {
 		return s.recordPageExecution(ctx, call, grant.Binding, result)
 	}
@@ -203,6 +207,9 @@ func (s *Store) Before(ctx context.Context, call *toolbrokerv1.ToolCall) (contex
 			return ctx, ErrDenied
 		}
 		if mode == "agent" {
+			if call.ToolName == browsersso.Tool {
+				return s.beforeSSO(ctx, call, epoch)
+			}
 			if browserpage.IsTool(call.ToolName) {
 				return s.beforePage(ctx, call, epoch)
 			}

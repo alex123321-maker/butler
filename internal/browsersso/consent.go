@@ -1,5 +1,5 @@
-// Package browsersso defines value-free, conditional RP/IdP consent. Consent is
-// not execution authority and cannot be consumed by the ordinary login tools.
+// Package browsersso defines value-free, conditional RP/IdP consent and its
+// distinct bounded execution contract. Ordinary login tools cannot consume it.
 package browsersso
 
 import (

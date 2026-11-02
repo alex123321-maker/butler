@@ -5,12 +5,14 @@ import (
 	"encoding/json"
 	"errors"
 	"os"
+	"strings"
 
 	"github.com/butler/butler/apps/orchestrator/internal/channel/telegram"
 	durableinput "github.com/butler/butler/apps/orchestrator/internal/input"
 	runstore "github.com/butler/butler/apps/orchestrator/internal/run"
 	"github.com/butler/butler/apps/orchestrator/internal/task"
 	"github.com/butler/butler/internal/actionauth"
+	"github.com/butler/butler/internal/browsersso"
 	"github.com/butler/butler/internal/communicationcontrol"
 	"github.com/butler/butler/internal/credentials"
 	"github.com/butler/butler/internal/ownership"
@@ -37,7 +39,11 @@ func (c *CredentialInteractions) configureTelegram(channel *telegramCommunicatio
 		}
 		defer tx.Rollback(ctx)
 		var owner, runID string
-		if tx.QueryRow(ctx, `SELECT owner_id,run_id FROM credential_vault_requests WHERE id=$1`, r.ID).Scan(&owner, &runID) != nil || owner != channel.binding.OwnerID {
+		query := `SELECT owner_id,run_id FROM credential_vault_requests WHERE id=$1`
+		if strings.HasPrefix(r.ID, "ssoq_") {
+			query = `SELECT owner_id,run_id FROM credential_sso_requests WHERE id=$1`
+		}
+		if tx.QueryRow(ctx, query, r.ID).Scan(&owner, &runID) != nil || owner != channel.binding.OwnerID {
 			return "", credentials.ErrVault
 		}
 		if channel.policy.check(ctx, tx, runID, channel.policy.binding, communicationcontrol.Args{}) != nil {
@@ -57,7 +63,11 @@ func (c *CredentialInteractions) configureLegacyTelegram(channel *telegram.Adapt
 	base := os.Getenv("BUTLER_PUBLIC_WEB_URL")
 	c.Notify = func(ctx context.Context, r credentials.AccessRequest, ack string) (string, error) {
 		var session string
-		if c.Vault.Pool.QueryRow(ctx, `SELECT q.session_key FROM credential_vault_requests q JOIN sessions s ON s.session_key=q.session_key WHERE q.id=$1 AND q.owner_id=s.user_id`, r.ID).Scan(&session) != nil {
+		query := `SELECT q.session_key FROM credential_vault_requests q JOIN sessions s ON s.session_key=q.session_key WHERE q.id=$1 AND q.owner_id=s.user_id`
+		if strings.HasPrefix(r.ID, "ssoq_") {
+			query = `SELECT q.session_key FROM credential_sso_requests q JOIN sessions s ON s.session_key=q.session_key WHERE q.id=$1 AND q.owner_id=s.user_id`
+		}
+		if c.Vault.Pool.QueryRow(ctx, query, r.ID).Scan(&session) != nil {
 			return "", credentials.ErrVault
 		}
 		return channel.CredentialNotice(ctx, session, r, base, ack)
@@ -69,6 +79,9 @@ func (c *CredentialInteractions) configureLegacyTelegram(channel *telegram.Adapt
 func (c *CredentialInteractions) Sweep(ctx context.Context) error {
 	if c == nil {
 		return nil
+	}
+	if e := c.sweepSSO(ctx); e != nil {
+		return e
 	}
 	tx, err := c.Vault.Pool.Begin(ctx)
 	if err != nil {
@@ -156,7 +169,7 @@ func (c *CredentialInteractions) readyTx(ctx context.Context, tx pgx.Tx, runID, 
 	}
 	return c.Inputs.ReadyInteractionTx(ctx, tx, inputID, id, paused)
 }
-func (c *CredentialInteractions) SuspendRequest(ctx context.Context, runID, callID string) (string, error) {
+func (c *CredentialInteractions) SuspendRequest(ctx context.Context, runID, callID string, tools ...string) (string, error) {
 	if c == nil {
 		return "", credentials.ErrVault
 	}
@@ -174,7 +187,14 @@ func (c *CredentialInteractions) SuspendRequest(ctx context.Context, runID, call
 	}
 	var id, taskID, state string
 	var rev, cr int64
-	if tx.QueryRow(ctx, `SELECT id,task_id,task_revision,constraints_revision,state FROM credential_vault_requests WHERE run_id=$1 AND tool_call_id=$2 AND session_key=$3 AND expires_at>now() FOR UPDATE`, runID, callID, token.SessionKey).Scan(&id, &taskID, &rev, &cr, &state) != nil {
+	if len(tools) > 1 {
+		return "", credentials.ErrVault
+	}
+	query := `SELECT id,task_id,task_revision,constraints_revision,state FROM credential_vault_requests WHERE run_id=$1 AND tool_call_id=$2 AND session_key=$3 AND expires_at>now() FOR UPDATE`
+	if len(tools) == 1 && tools[0] == browsersso.RequestTool {
+		query = `SELECT q.id,q.task_id,q.task_revision,q.constraints_revision,v.live_state FROM credential_sso_requests q JOIN credential_sso_state v USING(id) WHERE q.run_id=$1 AND q.tool_call_id=$2 AND q.session_key=$3 FOR SHARE OF q`
+	}
+	if tx.QueryRow(ctx, query, runID, callID, token.SessionKey).Scan(&id, &taskID, &rev, &cr, &state) != nil {
 		return "", credentials.ErrVault
 	}
 	if task.WaitInteractionTx(ctx, tx, taskID, rev, cr) != nil || c.Inputs.SuspendPrivateInteractionTx(ctx, tx, runID, id, "credential_interaction") != nil || runstore.SuspendInteractionTx(ctx, tx, runID) != nil {
@@ -205,8 +225,13 @@ func (c *CredentialInteractions) ResumeInteraction(ctx context.Context, runID, i
 		return "", credentials.ErrVault
 	}
 	var owner, taskID, state, fields string
+	var scopeDigest string
 	var rev, cr int64
-	if tx.QueryRow(ctx, `SELECT owner_id,task_id,task_revision,constraints_revision,CASE WHEN expires_at<=now() THEN 'expired' ELSE state END,fields::text FROM credential_vault_requests WHERE id=$1 AND run_id=$2 AND session_key=$3 FOR SHARE`, id, runID, token.SessionKey).Scan(&owner, &taskID, &rev, &cr, &state, &fields) != nil || state == "pending" {
+	query := `SELECT owner_id,task_id,task_revision,constraints_revision,CASE WHEN expires_at<=now() THEN 'expired' ELSE state END,fields::text,''::text FROM credential_vault_requests WHERE id=$1 AND run_id=$2 AND session_key=$3 FOR SHARE`
+	if strings.HasPrefix(id, "ssoq_") {
+		query = `SELECT q.owner_id,q.task_id,q.task_revision,q.constraints_revision,v.live_state,'["username","password"]'::text,q.scope_digest FROM credential_sso_requests q JOIN credential_sso_state v USING(id) WHERE q.id=$1 AND q.run_id=$2 AND q.session_key=$3 FOR SHARE OF q`
+	}
+	if tx.QueryRow(ctx, query, id, runID, token.SessionKey).Scan(&owner, &taskID, &rev, &cr, &state, &fields, &scopeDigest) != nil || state == "pending" {
 		return "", credentials.ErrVault
 	}
 	if task.ResumeInteractionTx(ctx, tx, taskID, rev, cr) != nil || c.Inputs.CheckInteractionClaimTx(ctx, tx, runID, id) != nil {
@@ -220,7 +245,11 @@ func (c *CredentialInteractions) ResumeInteraction(ctx context.Context, runID, i
 	if tx.Commit(ctx) != nil {
 		return "", credentials.ErrVault
 	}
-	raw, _ := json.Marshal(map[string]any{"request_id": id, "state": state, "credential_alias": id, "fields": json.RawMessage(fields)})
+	response := map[string]any{"request_id": id, "state": state, "credential_alias": id, "fields": json.RawMessage(fields)}
+	if scopeDigest != "" {
+		response["scope_digest"] = scopeDigest
+	}
+	raw, _ := json.Marshal(response)
 	return string(raw), nil
 }
 

@@ -1,5 +1,12 @@
 # Butler — Run Lifecycle Specification
 
+`credentials.request_sso_login` follows the same canonical owner-credential
+wait as ordinary login: suspend the exact Input/Task versions, notify once,
+resume after protected decision or live-scope expiry, and recheck authority
+before execution. The SSO ledger and notices are separate; an uncertain send
+or consumed use claim is never reset for retry. One protected decision covers
+the bounded SSO POST and RP verification; it is not generic POST authority.
+
 Interaction recovery resolves the canonical owning interaction before active-only
 source readers run. The owning kernel checks claim/lease, exact versions,
 evidence and current authority and resumes the Task's exact wait. Source/delegation

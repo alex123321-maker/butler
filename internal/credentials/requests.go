@@ -238,6 +238,9 @@ func (v *Vault) Respond(ctx context.Context, owner, id, recordID string, allow b
 
 // Metadata identifies an approved request, never a reusable account capability.
 func (v *Vault) GetByAlias(ctx context.Context, alias string) (Record, error) {
+	if isSSOAlias(alias) {
+		return v.ssoRecord(ctx, alias)
+	}
 	var r Record
 	var target, kind, scope string
 	var rev int64
@@ -275,6 +278,9 @@ func (v *Vault) GetByAlias(ctx context.Context, alias string) (Record, error) {
 }
 func mustJSONBytes(v any) []byte { b, _ := json.Marshal(v); return b }
 func (v *Vault) RequestStatus(ctx context.Context, p Principal, id string) (AccessRequest, error) {
+	if isSSOAlias(id) {
+		return v.ssoStatus(ctx, p, id)
+	}
 	tx, err := v.Pool.Begin(ctx)
 	if err != nil {
 		return AccessRequest{}, ErrVault
@@ -301,6 +307,9 @@ func (v *Vault) RequestStatus(ctx context.Context, p Principal, id string) (Acce
 func (v *Vault) ResolveSecretRef(context.Context, string) (string, error) { return "", ErrVault }
 
 func (v *Vault) CheckGrantedCall(ctx context.Context, call *toolbrokerv1.ToolCall) bool {
+	if call != nil && call.ToolName == browsersso.Tool {
+		return v.checkSSOCall(ctx, call)
+	}
 	if call == nil || (call.ToolName != "browser.prepare_fill" && call.ToolName != "browser.prepare_type" && call.ToolName != browserauth.Tool) || len(call.CredentialRefs) == 0 {
 		return false
 	}
@@ -331,6 +340,9 @@ func (v *Vault) CheckGrantedCall(ctx context.Context, call *toolbrokerv1.ToolCal
 	return true
 }
 func (v *Vault) ResolveField(ctx context.Context, call *toolbrokerv1.ToolCall, record Record, field string) (string, error) {
+	if call != nil && call.ToolName == browsersso.Tool {
+		return v.resolveSSOField(ctx, call, record, field)
+	}
 	var args struct {
 		SessionID   string `json:"browser_session_id"`
 		ExpectedURL string `json:"expected_url"`

@@ -37,6 +37,13 @@ func bindBrowserReadScope(b ActionBinding, resource string, epoch int64) (Action
 }
 
 func scopedResourceWithin(s ResourceScope, b ActionBinding) bool {
+	if validSSOScope(b) {
+		for _, target := range b.BrowserSSO.Targets() {
+			if resourceWithin(s, target) {
+				return true
+			}
+		}
+	}
 	return resourceWithin(s, b.Resource) || (BrowserContextRead(b) && b.BrowserScopeURL != "" && resourceWithin(s, b.BrowserScopeURL)) ||
 		(b.BrowserPage != nil && browserpage.IsTool(b.ToolName) && resourceWithin(s, b.BrowserPage.URL))
 }

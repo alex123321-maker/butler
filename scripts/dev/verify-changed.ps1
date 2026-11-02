@@ -26,10 +26,10 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
-    "^(internal/browsersso/|internal/credentials/sso|migrations/109_browser_sso_consent[.]|docs/architecture/browser-sso-protocol[.]md$)" {
+    "^(internal/browsersso/|internal/credentials/sso|internal/(actionauth|browsercontrol)/sso|apps/tool-browser/internal/runtime/sso|apps/orchestrator/internal/app/credential_sso|migrations/1(09_browser_sso_consent|10_browser_sso_use)[.]|scripts/dev/browser-sso-execution-tests[.]sh|[.]github/workflows/browser-sso[.]yml|docs/architecture/browser-sso-protocol[.]md$)" {
       [void]$specs.Add("docs/architecture/browser-sso-protocol.md")
       [void]$specs.Add("docs/architecture/credential-management.md")
-      [void]$tests.Add("Protected SSO consent: browsersso TestSSOConsent, credentials TestVaultSSOPostgresIntegration and production owner API TestCredentialVaultOwnerAPIPrivacyLocal with disposable *_test PostgreSQL; credential-vault.spec.ts. This foundation registers no SSO executor/tool and proves no native/Google login.")
+      [void]$tests.Add("Protected SSO execution: bash scripts/dev/browser-sso-execution-tests.sh with disposable *_test PostgreSQL, real HTTPS recipient, isolated Linux NSS HOME and Chromium; required skips fail. Also credential-vault.spec.ts. Component checks do not prove composed kernel/native delivery or Google login.")
       continue
     }
     "^(internal/browserpage/|internal/(actionauth/page_(binding|outcome)|browsercontrol/page_execution)|apps/orchestrator/internal/orchestrator/page_outcome|apps/tool-browser/internal/runtime/page_execution|apps/tool-broker/internal/broker/page_execution|migrations/108_|scripts/dev/browser-page-execution-|web/tests/e2e/server-browser-pages|docs/testing/browser-page-(execution|outcome)-)" {

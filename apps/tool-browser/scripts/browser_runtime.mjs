@@ -107,7 +107,7 @@ function attachPage(root, page, openerID = '') {
     view.dirty = true
     if (frame === page.mainFrame()) {
       view.documentID = randomUUID().replaceAll('-', ''); rememberPageURL(root, frame.url())
-      if (root.managed && frame.url() !== 'about:blank' && origin(frame.url()) !== root.initialOrigin) void page.close().catch(() => {})
+      if (root.managed && frame.url() !== 'about:blank' && origin(frame.url()) !== root.initialOrigin && !(root.ssoGate?.child === view.pageID && ssoURLAllowed(root.ssoGate, frame.url()))) void page.close().catch(() => {})
     }
   })
   page.on('close', () => { view.state = 'closed'; view.dirty = true; root.frames.clear() })
@@ -129,7 +129,9 @@ async function admitPopup(root, page, reservation) {
   // map and cap after the await, before minting exactly one identity.
   if (root.pageIndex.has(page)) return root.pageIndex.get(page)
   if (root.pages.size >= 32 || [...root.pages.values()].filter(view => !view.page.isClosed()).length >= 4) { void page.close().catch(() => {}); return undefined }
+  if (root.ssoGate?.child) { root.ssoGate.violated = true; void page.close().catch(() => {}); return undefined }
   const view = attachPage(root, page, opener.pageID)
+  if (root.ssoGate) root.ssoGate.child = view.pageID
   if (reservation) view.initialRequestAdmitted = true
   return view
 }
@@ -140,7 +142,8 @@ function reserveInitialPopupRequest(root, request, url) {
   const previous = root.initialRequests.get(request.redirectedFrom())
   const gate = previous || root.popupGate
   const opener = gate && root.pages.get(gate.opener)
-  if (!root.managed || !gate || Date.now() > gate.until || !opener || opener.documentID !== gate.document || opener.page.isClosed() || !request.isNavigationRequest() || request.method() !== 'GET' || url.origin !== root.initialOrigin) return false
+  const originAllowed = root.ssoGate ? ssoURLAllowed(root.ssoGate, request.url()) : url.origin === root.initialOrigin
+  if (!root.managed || !gate || Date.now() > gate.until || !opener || opener.documentID !== gate.document || opener.page.isClosed() || !request.isNavigationRequest() || request.method() !== 'GET' || !originAllowed) return false
   if (previous) { if (previous.hops >= 5) return false }
   else { if (gate.remaining <= 0) return false; gate.remaining-- }
   const reservation = { opener: gate.opener, document: gate.document, until: Math.min(gate.until, Date.now() + 2000), hops: (previous?.hops || 0) + 1 }
@@ -168,6 +171,7 @@ async function newSession(request) {
     const request = route.request()
     const url = new URL(request.url())
     const allowed = ['http:', 'https:'].includes(url.protocol) && !url.username && !url.password && (!session.allowedDomains.length || session.allowedDomains.some(domain => domain === '*' || url.hostname === domain || url.hostname.endsWith('.' + domain)))
+    if (session.ssoGate) { await routeSSO(session, route, allowed); return }
     let popupRead = false
     if (session.managed) {
       rememberPageURL(session, request.url())
@@ -278,6 +282,7 @@ async function observe(session, selector = 'body') {
   const final_url = visibleURL(session, captured.url)
   session.observedPageDocumentID = externalDocument
   session.observedPageURL = final_url
+  session.observedPrivateURL = captured.url
   session.state = 'ready'
   session.observedRevision = captured.revision
   session.observedDocumentID = captured.documentID
@@ -577,6 +582,145 @@ async function submitLogin(session, request, live) {
   }
 }
 
+function ssoWithin(scope, raw) {
+  try {
+    const u = new URL(raw), p = u.pathname || '/'
+    if (u.protocol !== 'https:' || u.username || u.password || u.origin.toLowerCase() !== scope.origin.toLowerCase() || /%2f|%5c|%2e|\\/i.test(p)) return false
+    const prefix = scope.path_prefix.replace(/\/$/, '')
+    return !prefix || p === prefix || p.startsWith(prefix + '/')
+  } catch { return false }
+}
+function ssoURLAllowed(gate, raw) {
+  if (!gate || Date.now() >= Date.parse(gate.dispatch.expires_at)) return false
+  const site = origin(raw)
+  return [origin(gate.scope.rp_url), origin(gate.scope.idp_url)].includes(site) &&
+    !(gate.dispatch.denied || []).some(s => ssoWithin(s, raw)) && gate.dispatch.allowed.some(s => ssoWithin(s, raw))
+}
+
+// The private dispatch contains Broker-derived path caps. A consented origin is
+// never permission for an unrelated path, page, background request or POST.
+async function routeSSO(root, route, operatorAllowed) {
+  const request = route.request(), gate = root.ssoGate
+  const reject = () => route.abort('blockedbyclient')
+  if (!operatorAllowed || root.networkFrozen || !ssoURLAllowed(gate, request.url()) || !request.isNavigationRequest()) return reject()
+  let page, frame
+  try { frame = request.frame(); page = frame.page() } catch {
+    if (gate.phase === 'plan' && reserveInitialPopupRequest(root, request, new URL(request.url()))) return route.continue()
+    return reject()
+  }
+  const view = root.pageIndex.get(page) || (gate.phase === 'plan' ? await admitPopup(root, page) : undefined)
+  if (!view || frame !== page.mainFrame()) return reject()
+  const read = ['GET', 'HEAD'].includes(request.method())
+  if (view.pageID === gate.source) {
+    const allowed = gate.phase === 'plan' ? origin(request.url()) === origin(gate.scope.rp_url) : request.url() === gate.scope.verify_url && gate.posts === 1
+    if (!read || !allowed || gate.rootReads++ >= 6) return reject()
+    return route.continue()
+  }
+  if (view.pageID !== gate.child || view.openerID !== gate.source) return reject()
+  if (gate.phase === 'plan') {
+    if (!read || gate.hops++ >= 8) return reject()
+    if (!view.initialRequestAdmitted) {
+      const reservation = root.initialRequests.get(request.redirectedFrom())
+      const popup = reservation || root.popupGate
+      if (!popup || Date.now() > popup.until || popup.opener !== gate.source || !reservation && popup.remaining <= 0) return reject()
+      if (!reservation) popup.remaining--
+      view.initialRequestAdmitted = true
+    }
+    return route.continue()
+  }
+  if (gate.phase !== 'submit') return reject()
+  if (request.method() === 'POST' && gate.posts === 0 && !request.redirectedFrom() && request.url() === gate.scope.target_url && request.headers()['content-type']?.split(';')[0] === 'application/x-www-form-urlencoded' && request.postData() === gate.body) {
+    gate.posts++; gate.chain.add(request); return route.continue()
+  }
+  if (request.method() === 'GET' && gate.posts === 1 && gate.hops++ < 5 && gate.chain.has(request.redirectedFrom())) { gate.chain.add(request); return route.continue() }
+  return reject()
+}
+
+async function executeSSO(root, request) {
+  const denied = () => errorResult('sso_unknown', 'SSO was not verified; never repeat the POST automatically')
+  const scope = request.sso?.scope, dispatch = request.sso?.dispatch
+  const source = root?.pages.get(request.page_id)
+  if (!root?.managed || !scope || !dispatch || !source || source.page.isClosed() || source.documentID !== request.document_id || scope.browser_session_id !== request.browser_session_id || source.version !== request.observation_version || source.observedPageURL !== scope.rp_url) {
+    const old = root?.ssoPlan; if (root) { root.ssoPlan = undefined; root.networkFrozen = true }
+    if (old) await root.pages.get(old.child)?.page.close().catch(() => {})
+    return denied()
+  }
+  for (const value of request.secret_values || []) if (value) root.secrets.add(value)
+  root.preparedDraft = true
+  let keep = false
+  try {
+    if (request.sso_phase === 'plan') {
+      root.ssoPlan = undefined
+      const live = await source.page.evaluate(() => ({ documentID: window.__butlerDocumentID, revision: window.__butlerRevision }))
+      if (source.dirty || source.observedDocumentID !== live.documentID || source.observedRevision !== live.revision || source.observedPrivateURL !== source.page.url()) return denied()
+      const gate = { scope, dispatch, source: source.pageID, child: '', phase: 'plan', posts: 0, rootReads: 0, hops: 0 }
+      root.ssoGate = gate
+      root.popupGate = newPopupGate(root, source, 2000)
+      root.popupGate.remaining = Math.min(1, root.popupGate.remaining)
+      if (root.popupGate.remaining < 1) return denied()
+      const popup = source.page.waitForEvent('popup', { timeout: 6000 }).catch(() => null)
+      root.networkFrozen = false
+      await source.page.locator(scope.trigger_selector).click({ timeout: 2000, noWaitAfter: true })
+      const page = await popup
+      if (!page) return denied()
+      const child = root.pageIndex.get(page) || await admitPopup(root, page)
+      if (!child || gate.child !== child.pageID || child.openerID !== source.pageID) return denied()
+      await page.waitForURL(u => u.origin + u.pathname === scope.idp_url, { waitUntil: 'domcontentloaded', timeout: 6000 })
+      root.networkFrozen = true; root.popupGate = undefined
+      if (source.documentID !== request.document_id || page.isClosed() || !ssoURLAllowed(gate, page.url())) return denied()
+      await observe(child)
+      const childLive = await page.evaluate(() => ({ documentID: window.__butlerDocumentID, revision: window.__butlerRevision }))
+      const nativeScope = { browser_session_id: request.browser_session_id, expected_url: page.url(), target_url: scope.target_url, form_selector: scope.form_selector, username_selector: scope.username_selector, password_selector: scope.password_selector }
+      const native = { browser_session_id: request.browser_session_id, expected_url: page.url(), observation_version: child.version, login_phase: 'plan', login: { scope: nativeScope, username: request.sso.username, password: request.sso.password }, secret_values: request.secret_values }
+      const planned = await submitLogin(child, native, childLive)
+      if (gate.violated || !planned.ok || !child.loginPlan || !planned.login_nonce) return denied()
+      root.ssoPlan = { nonce: planned.login_nonce, source: source.pageID, sourceDocument: source.documentID, sourceURL: source.page.url(), child: child.pageID, childDocument: child.documentID, childURL: page.url(), scope: JSON.stringify(scope), dispatch: JSON.stringify(dispatch), native: child.loginPlan }
+      keep = true
+      return { ok: true, login_nonce: planned.login_nonce }
+    }
+    const plan = root.ssoPlan; root.ssoPlan = undefined
+    if (request.sso_phase !== 'submit' || !plan || plan.nonce !== request.login_nonce || plan.source !== source.pageID || plan.sourceDocument !== source.documentID || plan.sourceURL !== source.page.url() || plan.scope !== JSON.stringify(scope) || plan.dispatch !== JSON.stringify(dispatch)) return denied()
+    const child = root.pages.get(plan.child)
+    if (!child || child.page.isClosed() || child.documentID !== plan.childDocument || child.page.url() !== plan.childURL || child.openerID !== source.pageID) return denied()
+    const live = await child.page.evaluate(() => ({ documentID: window.__butlerDocumentID, revision: window.__butlerRevision }))
+    if (live.documentID !== plan.native.documentID || live.revision !== plan.native.revision) return denied()
+    child.loginPlan = undefined
+    const gate = { scope, dispatch, source: source.pageID, child: child.pageID, phase: 'submit', posts: 0, rootReads: 0, hops: 0, chain: new Set(), body: new URLSearchParams(plan.native.entries).toString() }
+    root.ssoGate = gate; root.networkFrozen = false
+    const settled = Promise.any([
+      child.page.waitForEvent('close', { timeout: 12000 }),
+      child.page.waitForURL(u => u.origin === origin(scope.rp_url), { waitUntil: 'domcontentloaded', timeout: 12000 }),
+      source.page.waitForURL(scope.verify_url, { waitUntil: 'domcontentloaded', timeout: 12000 })
+    ]).then(() => true, () => false)
+    await child.page.evaluate(({ scope, username, password }) => {
+      const select = selector => {
+        const indexed = /^(.*) >> nth=(0|[1-9][0-9]{0,2})$/.exec(selector), css = indexed ? indexed[1] : selector
+        if (css.includes('>>')) return null
+        const matches = document.querySelectorAll(css)
+        return !indexed && matches.length !== 1 ? null : matches[indexed ? Number(indexed[2]) : 0]
+      }
+      const form = select(scope.form_selector), user = select(scope.username_selector), pass = select(scope.password_selector)
+      if (!(form instanceof HTMLFormElement) || !(user instanceof HTMLInputElement) || !(pass instanceof HTMLInputElement) || user.form !== form || pass.form !== form || form.action !== scope.target_url) throw new Error('changed SSO form')
+      const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set
+      set.call(user, username); set.call(pass, password)
+      HTMLFormElement.prototype.submit.call(form)
+    }, request.sso)
+    if (!await settled || gate.posts !== 1) return denied()
+    gate.phase = 'verify'
+    if (!child.page.isClosed()) await child.page.close()
+    if (source.page.url() !== scope.verify_url) await source.page.goto(scope.verify_url, { waitUntil: 'domcontentloaded', timeout: 8000 })
+    root.networkFrozen = true
+    const observed = await observe(source)
+    return { ...observed, login_posts: gate.posts, login_cookies: await root.context.cookies(scope.verify_url) }
+  } catch { return denied() }
+  finally {
+    root.networkFrozen = true; root.allowWriteRequests = false; root.popupGate = undefined
+    const childID = root.ssoGate?.child || root.ssoPlan?.child
+    root.ssoGate = undefined
+    if (!keep && childID) await root.pages.get(childID)?.page.close().catch(() => {})
+  }
+}
+
 async function pageReports(root, refreshAll = false) {
   const reports = []
   for (const view of root.pages.values()) {
@@ -601,7 +745,7 @@ async function execute(request) {
   const gesture = root?.managed && ['browser.click', 'browser.fill', 'browser.type'].includes(request.tool_name)
   let result
   try {
-    result = await executeSingle(request)
+    result = request.tool_name === 'browser.sso_login' ? await executeSSO(root, request) : await executeSingle(request)
     // Admission remains inside the same finite approved gesture. Delayed
     // popups outside this window are closed before any initial request.
     if (gesture && result.ok) {

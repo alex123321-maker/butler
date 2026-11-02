@@ -122,11 +122,13 @@ maintenance or invent absence from runtime loss.
 
 Legacy credential requests against managed contexts are denied; password fields
 cannot accept ordinary literals. Migration109 adds a separate protected
-[RP/IdP consent foundation](browser-sso-protocol.md), with no model-facing SSO
-tool or secret-release path yet. RP/IdP action authorization, cross-origin
-transitions, authenticated RP evidence, anonymous negative control,
-native model execution/delivery and the owner's dedicated Google account are
-remaining acceptance. Do not reuse provider control-plane tokens for Google.
+[RP/IdP consent protocol](browser-sso-protocol.md). Migration110's separate
+`browser.sso_login` is the only credential-aware managed transition: one
+conditionally fresh IdP child, exact native form POST, freeze/cleanup and
+Go-verified RP access with an anonymous negative control. Generic page tools
+retain the credential-free same-origin boundary. Composed kernel execution,
+native model delivery and the owner's dedicated Google account remain required
+acceptance. Do not reuse provider control-plane tokens for Google.
 
 ## Verification
 

@@ -20,7 +20,7 @@ func (a *Adapter) CredentialNotice(ctx context.Context, session string, r creden
 		return "", ErrIgnoredUpdate
 	}
 	u, err := url.Parse(webURL)
-	if err != nil || u.Scheme != "https" || u.Hostname() == "" || u.User != nil || u.RawQuery != "" || u.Fragment != "" || !strings.HasPrefix(r.ID, "creq_") {
+	if err != nil || u.Scheme != "https" || u.Hostname() == "" || u.User != nil || u.RawQuery != "" || u.Fragment != "" || (!strings.HasPrefix(r.ID, "creq_") && !(r.Kind == "sso_login" && strings.HasPrefix(r.ID, "ssoq_"))) {
 		return "", ErrExplicitUnsupported
 	}
 	title := "Разрешить использование учётных данных?"
@@ -33,7 +33,16 @@ func (a *Adapter) CredentialNotice(ctx context.Context, session string, r creden
 	if r.Kind == "login" {
 		title = "Разрешить один вход с проверкой доступа?"
 	}
+	if r.Kind == "sso_login" {
+		if r.SSOScope == nil || r.SSOScope.Validate() != nil {
+			return "", ErrExplicitUnsupported
+		}
+		title = "Разрешить один SSO-вход с проверкой доступа?"
+	}
 	text := title + "\nСайт: " + r.TargetOrigin + "\nЦель: " + r.Purpose + "\nПоля: " + strings.Join(r.Fields, ", ") + "\nВведите данные в защищённой форме Butler."
+	if r.Kind == "sso_login" {
+		text += "\nПровайдер входа: " + r.SSOScope.IdPURL
+	}
 	if r.RecordLabel != "" {
 		text += "\nЗапись: " + r.RecordLabel
 	}

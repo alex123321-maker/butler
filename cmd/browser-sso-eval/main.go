@@ -68,6 +68,8 @@ func run(args []string) error {
 	idpListen := fs.String("idp-listen", "127.0.0.1:18099", "loopback provider listener")
 	rpOrigin := fs.String("rp-origin", "", "externally visible RP origin")
 	idpOrigin := fs.String("idp-origin", "", "externally visible provider origin")
+	tlsCert := fs.String("tls-cert", "", "operator-provided TLS certificate file")
+	tlsKey := fs.String("tls-key", "", "operator-provided TLS key file")
 	if fs.Parse(args) != nil || fs.NArg() != 0 || *configPath == "" {
 		return errors.New("invalid fixture arguments")
 	}
@@ -77,6 +79,9 @@ func run(args []string) error {
 	}
 	if !loopback(*rpListen) || !loopback(*idpListen) || *rpListen == *idpListen || !validOrigin(*rpOrigin) || !validOrigin(*idpOrigin) || strings.EqualFold(*rpOrigin, *idpOrigin) || *journalPath == "" {
 		return errors.New("invalid fixture topology")
+	}
+	if (*tlsCert == "") != (*tlsKey == "") || *tlsCert != "" && (!strings.HasPrefix(*rpOrigin, "https://") || !strings.HasPrefix(*idpOrigin, "https://")) {
+		return errors.New("invalid fixture TLS topology")
 	}
 	cfg, err := load(*configPath)
 	if err != nil {
@@ -105,8 +110,14 @@ func run(args []string) error {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 	errs := make(chan error, 2)
-	go func() { errs <- a.Serve(rp) }()
-	go func() { errs <- b.Serve(idp) }()
+	serve := func(s *http.Server, l net.Listener) error {
+		if *tlsCert != "" {
+			return s.ServeTLS(l, *tlsCert, *tlsKey)
+		}
+		return s.Serve(l)
+	}
+	go func() { errs <- serve(a, rp) }()
+	go func() { errs <- serve(b, idp) }()
 	select {
 	case err = <-errs:
 	case <-ctx.Done():

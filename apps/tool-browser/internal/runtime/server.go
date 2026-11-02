@@ -13,6 +13,7 @@ import (
 	"github.com/butler/butler/internal/browserauth"
 	"github.com/butler/butler/internal/browsercontrol"
 	"github.com/butler/butler/internal/browserpage"
+	"github.com/butler/butler/internal/browsersso"
 	commonv1 "github.com/butler/butler/internal/gen/common/v1"
 	runtimev1 "github.com/butler/butler/internal/gen/runtime/v1"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
@@ -49,6 +50,8 @@ type Server struct {
 // Request is a private execution message. Scope and expiry come from Go,
 // not the model. Auth data is only broker-resolved material.
 type Request struct {
+	SSO                *ssoRequest             `json:"sso,omitempty"`
+	SSOPhase           string                  `json:"sso_phase,omitempty"`
 	ManagedPages       bool                    `json:"managed_pages,omitempty"`
 	PageID             string                  `json:"page_id,omitempty"`
 	DocumentID         string                  `json:"document_id,omitempty"`
@@ -199,6 +202,9 @@ func (s *Server) Execute(ctx context.Context, req *runtimev1.ExecuteRequest) (*r
 	}
 	if browserpage.IsTool(call.ToolName) {
 		return s.executePage(ctx, req)
+	}
+	if call.ToolName == browsersso.Tool {
+		return s.executeSSO(ctx, req)
 	}
 	args, err := decodeRequest(call.GetToolName(), call.GetArgsJson(), req.GetResolvedCredentials())
 	if err != nil {
@@ -448,7 +454,7 @@ func buildResultJSON(tool string, result Result) string {
 	result.LoginNonce, result.LoginURL, result.LoginCookies, result.LoginPosts = "", "", nil, 0
 	result.OwnerFrame = nil
 	result.OwnerPages = nil
-	if !browserpage.IsTool(tool) {
+	if !browserpage.IsTool(tool) && tool != browsersso.Tool {
 		result.PrivatePages = nil
 		result.SelectedPageID = ""
 	}
