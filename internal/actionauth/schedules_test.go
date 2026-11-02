@@ -2,8 +2,11 @@ package actionauth
 
 import (
 	"context"
+	"github.com/butler/butler/internal/credentialcontrol"
 	"github.com/butler/butler/internal/delegation"
 	"github.com/butler/butler/internal/schedulecontrol"
+	"github.com/butler/butler/internal/toolcatalog"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -131,12 +134,32 @@ func TestSchedulesStandardCapabilityPreservesAuthorityBounds(t *testing.T) {
 		})
 	}
 	m := testOwnerMandate(now)
-	before := len(m.Tools)
-	if len(EffectiveMandateTools(m)) != before+13 || len(m.Tools) != before {
-		t.Fatal("effective kernel tools mutated stored mandate")
-	}
-	m.ScopeKind = ""
-	if len(EffectiveMandateTools(m)) != before+2 {
-		t.Fatal("legacy task acquired non-catalog capabilities")
+	before := slices.Clone(m.Tools)
+	for _, kind := range []string{"owner_goal", ""} {
+		m.ScopeKind = kind
+		expected := map[string]bool{}
+		for _, name := range before {
+			expected[name] = true
+		}
+		for _, c := range toolcatalog.Contracts() {
+			expected[c.ToolName] = true
+		}
+		if kind == "owner_goal" {
+			for _, c := range credentialcontrol.Contracts() {
+				expected[c.ToolName] = true
+			}
+			for _, c := range schedulecontrol.Contracts() {
+				expected[c.ToolName] = true
+			}
+		}
+		actual := EffectiveMandateTools(m)
+		if !slices.Equal(m.Tools, before) || len(actual) != len(expected) {
+			t.Fatal("effective kernel tools changed stored mandate or exact capability set")
+		}
+		for _, name := range actual {
+			if !expected[name] {
+				t.Fatal("unassigned kernel capability", kind, name)
+			}
+		}
 	}
 }

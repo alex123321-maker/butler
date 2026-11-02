@@ -27,6 +27,13 @@ func TestSSOExecutionStrictReferencesAndNetworkCaps(t *testing.T) {
 	if !d.Valid(s) {
 		t.Fatal("complete private dispatch rejected")
 	}
+	for _, bad := range []NetworkScope{{Origin: "https://rp.test/path", PathPrefix: "/"}, {Origin: "https://rp.test", PathPrefix: "/a/../"}, {Origin: "https://rp.test", PathPrefix: "/?query=bad"}} {
+		invalid := d
+		invalid.Allowed = append(append([]NetworkScope{}, d.Allowed...), bad)
+		if invalid.Valid(s) {
+			t.Fatal("noncanonical private network scope accepted")
+		}
+	}
 	d.Denied = []NetworkScope{{Origin: "https://idp.test", PathPrefix: "/login"}}
 	if d.Valid(s) || d.Allows(s.TargetURL) || d.Allows("https://idp.test/login/sub?code=private") {
 		t.Fatal("path denial bypassed")
