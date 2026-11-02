@@ -246,7 +246,7 @@ func TestBrowserSSOChromiumHTTPS(t *testing.T) {
 			if mode == "verified" && (posts != 1 || callbacks != 1 || reads != 2 || !strings.Contains(out.Text, private.Fact) || out.NetworkState != "frozen") {
 				t.Fatal("missing recipient/probe evidence", posts, callbacks, reads)
 			}
-			if mode == "denied_idp_post" || mode == "stale_page" {
+			if mode == "denied_idp_post" || mode == "stale_page" || mode == "two_popups" {
 				if posts != 0 {
 					t.Fatal("stale or denied authority sent credentials")
 				}

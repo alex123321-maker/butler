@@ -119,6 +119,9 @@ function newPopupGate(root, view, duration) {
 }
 async function admitPopup(root, page, reservation) {
   if (root.pageIndex.has(page)) return root.pageIndex.get(page)
+  if (root.ssoAttempt?.child && root.pages.get(root.ssoAttempt.child)?.page !== page) {
+    root.ssoAttempt.violated = true; void page.close().catch(() => {}); return undefined
+  }
   const gate = reservation || root.popupGate
   const parent = await page.opener().catch(() => null)
   const opener = root.pageIndex.get(parent)
@@ -145,7 +148,7 @@ function reserveInitialPopupRequest(root, request, url) {
   const originAllowed = root.ssoGate ? ssoURLAllowed(root.ssoGate, request.url()) : url.origin === root.initialOrigin
   if (!root.managed || !gate || Date.now() > gate.until || !opener || opener.documentID !== gate.document || opener.page.isClosed() || !request.isNavigationRequest() || request.method() !== 'GET' || !originAllowed) return false
   if (previous) { if (previous.hops >= 5) return false }
-  else { if (gate.remaining <= 0) return false; gate.remaining-- }
+  else { if (gate.remaining <= 0) { if (root.ssoAttempt) root.ssoAttempt.violated = true; return false }; gate.remaining-- }
   const reservation = { opener: gate.opener, document: gate.document, until: Math.min(gate.until, Date.now() + 2000), hops: (previous?.hops || 0) + 1 }
   root.initialRequests.set(request, reservation)
   void request.response().then(async () => {
@@ -654,6 +657,7 @@ async function executeSSO(root, request) {
       const live = await source.page.evaluate(() => ({ documentID: window.__butlerDocumentID, revision: window.__butlerRevision }))
       if (source.dirty || source.observedDocumentID !== live.documentID || source.observedRevision !== live.revision || source.observedPrivateURL !== source.page.url()) return denied()
       const gate = { scope, dispatch, source: source.pageID, child: '', phase: 'plan', posts: 0, rootReads: 0, hops: 0 }
+      root.ssoAttempt = gate
       root.ssoGate = gate
       root.popupGate = newPopupGate(root, source, 2000)
       root.popupGate.remaining = Math.min(1, root.popupGate.remaining)
@@ -679,7 +683,7 @@ async function executeSSO(root, request) {
       return { ok: true, login_nonce: planned.login_nonce }
     }
     const plan = root.ssoPlan; root.ssoPlan = undefined
-    if (request.sso_phase !== 'submit' || !plan || plan.nonce !== request.login_nonce || plan.source !== source.pageID || plan.sourceDocument !== source.documentID || plan.sourceURL !== source.page.url() || plan.scope !== JSON.stringify(scope) || plan.dispatch !== JSON.stringify(dispatch)) return denied()
+    if (request.sso_phase !== 'submit' || root.ssoAttempt?.violated || !plan || plan.nonce !== request.login_nonce || plan.source !== source.pageID || plan.sourceDocument !== source.documentID || plan.sourceURL !== source.page.url() || plan.scope !== JSON.stringify(scope) || plan.dispatch !== JSON.stringify(dispatch)) return denied()
     const child = root.pages.get(plan.child)
     if (!child || child.page.isClosed() || child.documentID !== plan.childDocument || child.page.url() !== plan.childURL || child.openerID !== source.pageID) return denied()
     const live = await child.page.evaluate(() => ({ documentID: window.__butlerDocumentID, revision: window.__butlerRevision }))
@@ -688,10 +692,11 @@ async function executeSSO(root, request) {
     const gate = { scope, dispatch, source: source.pageID, child: child.pageID, phase: 'submit', posts: 0, rootReads: 0, hops: 0, chain: new Set(), body: new URLSearchParams(plan.native.entries).toString() }
     root.ssoGate = gate; root.networkFrozen = false
     const settled = Promise.any([
-      child.page.waitForEvent('close', { timeout: 12000 }),
-      child.page.waitForURL(u => u.origin === origin(scope.rp_url), { waitUntil: 'domcontentloaded', timeout: 12000 }),
-      source.page.waitForURL(scope.verify_url, { waitUntil: 'domcontentloaded', timeout: 12000 })
-    ]).then(() => true, () => false)
+      child.page.waitForEvent('close', { timeout: 12000 }).then(() => true),
+      child.page.waitForURL(u => u.origin === origin(scope.rp_url), { waitUntil: 'domcontentloaded', timeout: 12000 }).then(() => true),
+      source.page.waitForURL(scope.verify_url, { waitUntil: 'domcontentloaded', timeout: 12000 }).then(() => true),
+      child.page.waitForResponse(r => r.url() === scope.target_url && r.request().method() === 'POST' && r.status() >= 400, { timeout: 12000 }).then(() => false)
+    ]).then(value => value, () => false)
     await child.page.evaluate(({ scope, username, password }) => {
       const select = selector => {
         const indexed = /^(.*) >> nth=(0|[1-9][0-9]{0,2})$/.exec(selector), css = indexed ? indexed[1] : selector
@@ -705,7 +710,7 @@ async function executeSSO(root, request) {
       set.call(user, username); set.call(pass, password)
       HTMLFormElement.prototype.submit.call(form)
     }, request.sso)
-    if (!await settled || gate.posts !== 1) return denied()
+    if (!await settled || root.ssoAttempt?.violated || gate.posts !== 1) return denied()
     gate.phase = 'verify'
     if (!child.page.isClosed()) await child.page.close()
     if (source.page.url() !== scope.verify_url) await source.page.goto(scope.verify_url, { waitUntil: 'domcontentloaded', timeout: 8000 })
@@ -718,6 +723,7 @@ async function executeSSO(root, request) {
     const childID = root.ssoGate?.child || root.ssoPlan?.child
     root.ssoGate = undefined
     if (!keep && childID) await root.pages.get(childID)?.page.close().catch(() => {})
+    if (!keep) root.ssoAttempt = undefined
   }
 }
 
