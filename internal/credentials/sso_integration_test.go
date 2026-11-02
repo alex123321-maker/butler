@@ -195,6 +195,58 @@ func TestVaultSSOPostgresIntegration(t *testing.T) {
 			t.Fatal("expired card remained pending")
 		}
 	})
+	t.Run("request_lock_cannot_extend_consent_ttl", func(t *testing.T) {
+		v, p, entry, s := ssoFixture(t)
+		if _, e := v.Pool.Exec(ctx, `UPDATE server_browser_sessions SET expires_at=clock_timestamp()+interval '3 seconds'`); e != nil {
+			t.Fatal(e)
+		}
+		r, e := v.CreateSSORequest(ctx, p, "locked-sso", entry.ID, "Bounded answer", s)
+		if e != nil {
+			t.Fatal(e)
+		}
+		tx, e := v.Pool.Begin(ctx)
+		if e != nil {
+			t.Fatal(e)
+		}
+		defer tx.Rollback(ctx)
+		var id string
+		if tx.QueryRow(ctx, `SELECT id FROM credential_sso_requests WHERE id=$1 FOR UPDATE`, r.ID).Scan(&id) != nil {
+			t.Fatal("hold request")
+		}
+		answer := make(chan error, 1)
+		go func() {
+			answer <- v.RespondSSO(ctx, p.OwnerID, r.ID, entry.ID, true, browsersso.Consent, r.ScopeDigest)
+		}()
+		blocked := false
+		for deadline := time.Now().Add(2 * time.Second); time.Now().Before(deadline); {
+			if v.Pool.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM pg_stat_activity WHERE $1=ANY(pg_blocking_pids(pid)) AND query LIKE 'SELECT state FROM credential_sso_requests%')`, int64(tx.Conn().PgConn().PID())).Scan(&blocked) != nil {
+				t.Fatal("observe lock wait")
+			}
+			if blocked {
+				break
+			}
+			time.Sleep(10 * time.Millisecond)
+		}
+		if !blocked {
+			t.Fatal("answer never reached the held request lock")
+		}
+		time.Sleep(time.Until(r.ExpiresAt) + 20*time.Millisecond)
+		if e = tx.Commit(ctx); e != nil {
+			t.Fatal(e)
+		}
+		select {
+		case e := <-answer:
+			if e == nil {
+				t.Fatal("lock wait extended consent")
+			}
+		case <-time.After(5 * time.Second):
+			t.Fatal("answer failed to settle")
+		}
+		var state string
+		if v.Pool.QueryRow(ctx, `SELECT state FROM credential_sso_requests WHERE id=$1`, r.ID).Scan(&state) != nil || state != "pending" {
+			t.Fatal("expired decision persisted")
+		}
+	})
 	for _, c := range []struct{ name, sql string }{
 		{"owner_takeover", `UPDATE server_browser_sessions SET mode='owner'`},
 		{"runtime_epoch", `UPDATE server_browser_sessions SET epoch=epoch+1`},

@@ -41,13 +41,14 @@ Windows, repository-local caches, isolated PostgreSQL on loopback port55443,
 synthetic encrypted account only. Each integration fixture uses its own schema
 and drops it on cleanup. No lab deployment or shared service was modified.
 
-* Final targeted race run: **30 test/subtest PASS, zero FAIL, zero SKIP** across
+* Final targeted race run: **31 test/subtest PASS, zero FAIL, zero SKIP** across
   `internal/browsersso`, `internal/credentials` and production owner API. Packages
-  completed in 9.583s, 15.514s and 1.837s respectively; these times overlap and
-  are not added as turn latency. Report `.cache/sso-consent-go-review.jsonl`.
+  completed in 5.312s, 11.318s and 2.139s respectively; these times overlap and
+  are not added as turn latency. Report `.cache/sso-consent-go-final-ttl.jsonl`.
 * Coverage includes exact card/version marker, cross-request digest rejection,
   eight simultaneous repeated answers with one durable decision, owner/task/
-  constraint/account/context/page fences, TTL clipping, privacy, no legacy
+  constraint/account/context/page fences, TTL clipping including a PostgreSQL-
+  observed real row-lock wait past expiry, privacy, no legacy
   field release, account deletion, immutable history and downgrade refusal.
 * Chromium: **6/6** vault UI tests passed, including two new SSO card cases.
   SSO card actions took 5.8s and 1.9s; the complete build/start/test command took

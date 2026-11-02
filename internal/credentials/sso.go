@@ -173,6 +173,12 @@ func (v *Vault) RespondSSO(ctx context.Context, owner, id, recordID string, allo
 	if tx.QueryRow(ctx, `SELECT state FROM credential_sso_requests WHERE id=$1 AND owner_id=$2 FOR UPDATE`, id, owner).Scan(&state) != nil {
 		return ErrVault
 	}
+	// A competing answer/transaction can hold this row past its TTL. Re-read
+	// database time after acquiring the lock, not just before waiting for it.
+	var live bool
+	if tx.QueryRow(ctx, `SELECT expires_at>clock_timestamp() FROM credential_sso_requests WHERE id=$1`, id).Scan(&live) != nil || !live {
+		return ErrVault
+	}
 	target := "denied"
 	if allow {
 		target = "approved"
@@ -183,7 +189,7 @@ func (v *Vault) RespondSSO(ctx context.Context, owner, id, recordID string, allo
 	if state != "pending" {
 		return ErrVault
 	}
-	if _, e = tx.Exec(ctx, `UPDATE credential_sso_requests SET state=$2 WHERE id=$1`, id, target); e != nil {
+	if e = tx.QueryRow(ctx, `UPDATE credential_sso_requests SET state=$2 WHERE id=$1 AND expires_at>clock_timestamp() RETURNING id`, id, target).Scan(&id); e != nil {
 		return ErrVault
 	}
 	if v.AfterResponse != nil && v.AfterResponse(ctx, tx, p.RunID, id) != nil {

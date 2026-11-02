@@ -29,6 +29,8 @@ An old generic-access client, ordinary-login marker, changed account or stale
 card cannot approve. Approval rechecks current Run/Task, live RP page and epoch,
 expiry and active account revision transactionally. Repeating the same protected
 answer records no second decision or wake. Denial requires no approval marker.
+Request expiry is checked again against database time after acquiring the
+decision row lock; waiting for another transaction cannot extend consent TTL.
 
 This is consent storage and protected presentation, **not an installed SSO
 executor**. No model-facing request/execute tool is registered at this stage.
