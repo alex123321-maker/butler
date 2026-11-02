@@ -1,0 +1,31 @@
+{
+  "execution_ns": 10405200376,
+  "note": "provider_wait includes transport/network/remote processing, excluding measured Butler admission callbacks; tool_rpc is a subset of system time; preparation and observer are separate",
+  "observer_ns": 68858270,
+  "preparation_ns": 2500684231,
+  "provider_reasoning_time_ns": null,
+  "spans": [
+    {
+      "kind": "tool_rpc",
+      "name": "skills.load",
+      "nanoseconds": 75454591
+    },
+    {
+      "kind": "tool_rpc",
+      "name": "extension.project.inspect",
+      "nanoseconds": 45347107
+    },
+    {
+      "kind": "tool_rpc",
+      "name": "extension.project.prepare-patch",
+      "nanoseconds": 45218669
+    },
+    {
+      "kind": "tool_rpc",
+      "name": "extension.project.check",
+      "nanoseconds": 40932496
+    }
+  ],
+  "total_to_observation_ns": 12974747208,
+  "version": "wall-phases-v1"
+}

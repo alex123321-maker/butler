@@ -1,0 +1,22 @@
+{
+  "source": "66be595bc122ea5a6e02def4689b92b70945fc3a",
+  "root": "/srv/gitea/butler-acceptance/issue115-skill-latency-20261102-r2",
+  "native_requests": 0,
+  "model_network": "internal Docker network, no provider credential mounts",
+  "test_log_sha256": "3e444dfaa530da1d5fcfe690aea1b4dc3d75d640aeabbfba3825f5964ab36e09",
+  "build_log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "binary_sha256": "a37693e235f059c1dda611c524f9c7d5717d81bfe0e274cd2b549776a6509484",
+  "failed_diagnostic_root": "/srv/gitea/butler-acceptance/issue115-skill-latency-20261102-r1",
+  "failed_diagnostic_reason": "wrapper hid optional inference limit methods; fixed by concrete embedded provider",
+  "failure_native_requests": 0,
+  "checks": {
+    "issue115-skill-latency-20261102-r1": {
+      "pg_stopped": true,
+      "pg_exit": 0
+    },
+    "issue115-skill-latency-20261102-r2": {
+      "pg_stopped": true,
+      "pg_exit": 0
+    }
+  }
+}

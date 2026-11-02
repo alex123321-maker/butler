@@ -1,0 +1,8 @@
+{
+  "bytes": 4461216,
+  "db_seconds": 0.415402353,
+  "file_write_fsync_seconds": 0.157831732,
+  "marshal_seconds": 0.261491738,
+  "methods": 128,
+  "native_requests": 0
+}

@@ -1,0 +1,182 @@
+package app
+
+// Model-free diagnostic overlay for the frozen research source. Not production.
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"os"
+	"path/filepath"
+	"sync/atomic"
+	"testing"
+	"time"
+
+	"github.com/butler/butler/apps/orchestrator/internal/orchestrator"
+	"github.com/butler/butler/internal/memory/memorytest"
+	"github.com/butler/butler/internal/skills"
+	"github.com/butler/butler/internal/transport"
+)
+
+type latencyStats struct{ calls, nanos atomic.Int64 }
+
+var latencyActive *latencyStats
+var latencyFragments int
+
+type latencyCatalog struct {
+	orchestrator.SkillCatalog
+	stats *latencyStats
+}
+
+func (c latencyCatalog) Pinned(ctx context.Context, run string) ([]skills.Package, error) {
+	start := time.Now()
+	p, e := c.SkillCatalog.Pinned(ctx, run)
+	c.stats.calls.Add(1)
+	c.stats.nanos.Add(time.Since(start).Nanoseconds())
+	return p, e
+}
+func latencyWrapCatalog(c orchestrator.SkillCatalog) orchestrator.SkillCatalog {
+	if latencyActive == nil {
+		return c
+	}
+	return latencyCatalog{c, latencyActive}
+}
+
+type latencyProvider struct {
+	*utilityWorkflowProvider
+	fragments int
+}
+
+func (p *latencyProvider) transform(s transport.EventStream, e error) (transport.EventStream, error) {
+	if e != nil {
+		return nil, e
+	}
+	events := []transport.TransportEvent{}
+	for event := range s {
+		if event.AssistantFinal != nil && p.fragments > 0 {
+			text := []rune(event.AssistantFinal.Content)
+			for i := 0; i < p.fragments; i++ {
+				delta := event
+				delta.EventID = fmt.Sprintf("diagnostic-delta-%d", i)
+				delta.EventType = transport.EventTypeAssistantDelta
+				delta.AssistantFinal = nil
+				delta.Usage = nil
+				delta.AssistantDelta = &transport.AssistantDelta{DeltaType: "text", Content: string(text[i*len(text)/p.fragments : (i+1)*len(text)/p.fragments]), SequenceNo: i}
+				events = append(events, delta)
+			}
+		}
+		events = append(events, event)
+	}
+	out := make(chan transport.TransportEvent, len(events))
+	for _, v := range events {
+		out <- v
+	}
+	close(out)
+	return out, nil
+}
+func (p *latencyProvider) StartRun(c context.Context, q transport.StartRunRequest) (transport.EventStream, error) {
+	return p.transform(p.utilityWorkflowProvider.StartRun(c, q))
+}
+func (p *latencyProvider) SubmitToolResult(c context.Context, q transport.SubmitToolResultRequest) (transport.EventStream, error) {
+	return p.transform(p.utilityWorkflowProvider.SubmitToolResult(c, q))
+}
+
+func TestSkillLatencyDiagnostic(t *testing.T) {
+	root := os.Getenv("BUTLER_LATENCY_OUTPUT")
+	if root == "" {
+		t.Fatal("exclusive output required")
+	}
+	if e := os.Mkdir(root, 0700); e != nil {
+		t.Fatal(e)
+	}
+	suite, e := utilityWorkflowSuite()
+	if e != nil {
+		t.Fatal(e)
+	}
+	for n, tc := range []struct {
+		arm       string
+		fragments int
+	}{{"B", 0}, {"C", 0}, {"B", 180}, {"C", 180}, {"C", 360}, {"C", 180}} {
+		t.Run(fmt.Sprintf("%s_%d_%d", tc.arm, tc.fragments, n), func(t *testing.T) {
+			latencyActive = nil
+			latencyFragments = tc.fragments
+			// The private source overlay resets metrics after fixture preparation.
+			utilityWholeCase(t, root, suite, utilityWholeSlot{n + 1, 0, tc.arm, "started"}, nil)
+			utilityWholeWrite(t, root, fmt.Sprintf("metrics-%03d.json", n+1), map[string]any{"arm": tc.arm, "delta_fragments": tc.fragments, "pinned_rpc_calls": latencyActive.calls.Load(), "pinned_rpc_seconds": float64(latencyActive.nanos.Load()) / 1e9, "native_requests": 0})
+		})
+	}
+}
+
+func TestSkillLatencyJournalReplay(t *testing.T) {
+	ctx := context.Background()
+	pool := memorytest.Database(t)
+	if _, e := pool.Exec(ctx, `CREATE TABLE latency_journal(seq integer PRIMARY KEY,slot integer,dispatched boolean NOT NULL DEFAULT false,body jsonb)`); e != nil {
+		t.Fatal(e)
+	}
+	dir := filepath.Join(os.Getenv("BUTLER_LATENCY_OUTPUT"), "journal-only")
+	if e := os.Mkdir(dir, 0700); e != nil {
+		t.Fatal(e)
+	}
+	paths, e := filepath.Glob("/historical/out/actual/slot-*/native-*.private.json")
+	if e != nil {
+		t.Fatal(e)
+	}
+	type entry struct {
+		seq, slot int
+		data      map[string]any
+	}
+	entries := []entry{}
+	for _, path := range paths {
+		raw, e := os.ReadFile(path)
+		if e != nil {
+			t.Fatal(e)
+		}
+		var data map[string]any
+		if e = json.Unmarshal(raw, &data); e != nil {
+			t.Fatal(e)
+		}
+		entries = append(entries, entry{int(data["sequence"].(float64)), int(data["slot"].(float64)), data})
+	}
+	if len(entries) != 128 {
+		t.Fatal("wrong historical denominator")
+	}
+	var db, marshal, file time.Duration
+	bytes := 0
+	for _, v := range entries {
+		start := time.Now()
+		if _, e = pool.Exec(ctx, `INSERT INTO latency_journal(seq,slot)VALUES($1,$2)`, v.seq, v.slot); e != nil {
+			t.Fatal(e)
+		}
+		if _, e = pool.Exec(ctx, `UPDATE latency_journal SET dispatched=true WHERE seq=$1`, v.seq); e != nil {
+			t.Fatal(e)
+		}
+		db += time.Since(start)
+		start = time.Now()
+		raw, e := json.Marshal(v.data)
+		if e != nil {
+			t.Fatal(e)
+		}
+		marshal += time.Since(start)
+		bytes += len(raw)
+		start = time.Now()
+		if _, e = pool.Exec(ctx, `UPDATE latency_journal SET body=$2 WHERE seq=$1`, v.seq, raw); e != nil {
+			t.Fatal(e)
+		}
+		db += time.Since(start)
+		start = time.Now()
+		f, e := os.OpenFile(filepath.Join(dir, fmt.Sprintf("%03d.json", v.seq)), os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0600)
+		if e != nil {
+			t.Fatal(e)
+		}
+		if _, e = f.Write(raw); e != nil {
+			t.Fatal(e)
+		}
+		if e = f.Sync(); e != nil {
+			t.Fatal(e)
+		}
+		if e = f.Close(); e != nil {
+			t.Fatal(e)
+		}
+		file += time.Since(start)
+	}
+	utilityWholeWrite(t, os.Getenv("BUTLER_LATENCY_OUTPUT"), "journal-metrics.json", map[string]any{"methods": len(entries), "native_requests": 0, "bytes": bytes, "db_seconds": db.Seconds(), "marshal_seconds": marshal.Seconds(), "file_write_fsync_seconds": file.Seconds()})
+}
