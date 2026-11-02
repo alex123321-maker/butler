@@ -46,7 +46,14 @@ attempt must retain ingress and delivered-response timestamps, total wall time
 including model deliberation, and separately reported owner wait. Do not replay
 past attempts merely to reconstruct old metrics.
 
-Deployment check: both `laba` filesystems are full (about 12 MB free on `/`,
+Initial deployment check: both `laba` filesystems were full (about 12 MB free on `/`,
 23 MB on `/srv/storage` at inspection). This stage has not deployed binaries or
 started a native attempt on that host. The dedicated `devops` stand has space,
-but a second public IdP DNS name/certificate is not yet configured.
+but a second public IdP DNS name/certificate was not yet configured at that stage.
+
+The subsequent [native qualification](browser-native-sso-2026-11-02.md) records
+the authorized cleanup and isolated HTTPS setup, lab candidate rollout, retained
+failures/historical review, then one protected consent, one verified native SSO
+and real Web/Telegram delivery. Total delivered-response time was 286.243 seconds
+including model deliberation and 83.057 seconds of operator consent wait. This
+does not establish Google compatibility or verified durable Task completion.

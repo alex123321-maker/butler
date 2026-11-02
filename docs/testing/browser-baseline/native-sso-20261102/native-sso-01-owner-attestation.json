@@ -1,0 +1,13 @@
+{
+  "scope": "synthetic_sso_explicit_test_operator_attestation",
+  "at": "2026-11-02T08:34:53Z",
+  "source_trial": "01",
+  "accepted_idp_logins": 0,
+  "callbacks": 0,
+  "recipient_stopped_and_processing_settled": true,
+  "journal_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "operator_reports": 1,
+  "automatic_production_verifier": false,
+  "old_input_resumed": false,
+  "grant_refunded": false
+}
