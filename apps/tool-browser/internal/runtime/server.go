@@ -13,6 +13,7 @@ import (
 	"github.com/butler/butler/internal/browserauth"
 	"github.com/butler/butler/internal/browsercontrol"
 	"github.com/butler/butler/internal/browserpage"
+	"github.com/butler/butler/internal/browserspa"
 	"github.com/butler/butler/internal/browsersso"
 	commonv1 "github.com/butler/butler/internal/gen/common/v1"
 	runtimev1 "github.com/butler/butler/internal/gen/runtime/v1"
@@ -45,11 +46,13 @@ type Server struct {
 	// Set at startup when the private owner channel is enabled. Legacy isolated
 	// browser composition has no owner epochs and retains its existing contract.
 	RequireDispatchEpoch bool
+	SPAEnabled           bool
 }
 
 // Request is a private execution message. Scope and expiry come from Go,
 // not the model. Auth data is only broker-resolved material.
 type Request struct {
+	SPA                *spaRequest             `json:"spa,omitempty"`
 	SSOInspection      *inspectionRequest      `json:"sso_inspection,omitempty"`
 	SSO                *ssoRequest             `json:"sso,omitempty"`
 	SSOPhase           string                  `json:"sso_phase,omitempty"`
@@ -114,6 +117,9 @@ type ResultError struct {
 	Retryable bool   `json:"retryable"`
 }
 type Result struct {
+	SPAProfile           string                     `json:"spa_profile,omitempty"`
+	SPANetwork           *browserspa.NetworkStats   `json:"spa_network,omitempty"`
+	SPANonce             string                     `json:"spa_nonce,omitempty"` // private two-phase helper identity
 	Buttons              []ResultButton             `json:"buttons,omitempty"`
 	InspectionForms      []browsersso.InspectedForm `json:"inspection_forms,omitempty"`
 	OwnerPages           []browsercontrol.OwnerPage `json:"owner_pages,omitempty"`
@@ -206,6 +212,9 @@ func (s *Server) Execute(ctx context.Context, req *runtimev1.ExecuteRequest) (*r
 	call, contract := req.GetToolCall(), req.GetContract()
 	if call == nil || contract == nil || s.runner == nil {
 		return fail(commonv1.ErrorClass_ERROR_CLASS_VALIDATION_ERROR, "invalid_request", "tool call, contract and browser runner are required")
+	}
+	if call.GetToolName() == browserspa.Tool {
+		return s.executeSPA(ctx, req)
 	}
 	if browserpage.IsTool(call.ToolName) || call.ToolName == browsersso.InspectTool {
 		return s.executePage(ctx, req)
@@ -458,6 +467,7 @@ func validateSelectorRequired(args Request) error {
 	return nil
 }
 func buildResultJSON(tool string, result Result) string {
+	result.SPANonce = ""
 	result.LoginNonce, result.LoginURL, result.LoginCookies, result.LoginPosts = "", "", nil, 0
 	result.OwnerFrame = nil
 	result.OwnerPages = nil

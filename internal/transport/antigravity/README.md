@@ -1,5 +1,11 @@
 # Antigravity native transport
 
+FAILED_PRECONDITION location refusals project onto the existing content-free
+`upstream_location_policy` category. This is the upstream's diagnostic claim,
+not independent location proof. Raw account messages/URLs remain private; no
+automatic provider/model/endpoint retry or route change is introduced. Older
+generic failures are not reclassified by replaying them.
+
 Invalid function proposals retain a fixed content-free `DiagnosticReason` before
 Core sanitizes execution errors. It distinguishes malformed/unselected functions
 and structural argument failures without retaining names, paths, values or raw

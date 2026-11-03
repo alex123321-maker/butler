@@ -4,7 +4,7 @@ package prompt
 // Tool schemas carry details; these instructions explain state and authority.
 const BrowserStrategyContent = `Browser execution rules:
 
-1. EXPLICIT CONTEXT: browser.read is isolated; browser.open creates a single-page run context. browser.snapshot observes the current page without navigating. Same-origin browser.open_pages/pages/page_* require exact page/document/version refs. Owner selection grants no agent target; page tools accept no credentials. browser.close destroys the context.
+1. EXPLICIT CONTEXT: browser.read is isolated. If listed, browser.read_spa reads query/worker/push SPAs. browser.open creates a run context; browser.snapshot observes the current page without navigating. Same-origin browser.open_pages/pages/page_* require exact page/document/version refs. Owner selection grants no agent target; page tools accept no credentials. browser.close destroys the context.
 
 2. OBSERVE BEFORE EFFECTS: Legacy gestures bind latest observation_version and final_url as expected_url. prepare_fill/prepare_type freeze network including autosave. Snapshot/extract/wait preserve freeze; authorized click opens a bounded window. Live fill/type may autosave. Stale/page_changed requires fresh observation and reassessment. Never replay uncertain effects; DOM success proves no submission.
 

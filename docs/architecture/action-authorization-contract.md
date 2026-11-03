@@ -395,3 +395,20 @@ uses only a recorded result ref and its own ordinary grant/finite budget.
 Owner outcome review correlates both captured runtime digests and current
 page/context/Task/mandate before accepting a factual report; it grants no POST.
 See [managed-page review](browser-pages-execution.md).
+
+## Bounded SPA read profile
+
+The opt-in `browser.read_spa` contract is defined in
+`docs/architecture/browser-spa-query-protocol.md`. It uses the existing owner-goal,
+Input claim, immutable action/budget and one-use resource ticket. Private live
+checks revalidate running authority and actual destination before network
+release. A fresh, separate Chromium process routes page and service-worker
+HTTPS/WSS through the Go TLS gate. Fixed GraphQL read grammar/state machines
+exclude arbitrary mutations and auth payloads. Combined remote traffic is capped
+at4MiB within the ordinary egress reservation. Terminal freeze precedes visible
+observation; browser/worker/storage are destroyed before return. There is no
+continuation, thaw, credential input or restored session. Lost runtime/finish
+remains UNKNOWN/spent; current result authority and proof are required for data
+release. Legacy browser preparation/login/page contracts remain independent.
+Both Broker/runtime flags default off and require authenticated private resource
+and capability endpoints. Component success does not establish native delivery.

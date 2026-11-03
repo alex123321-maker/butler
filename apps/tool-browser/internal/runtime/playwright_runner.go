@@ -127,6 +127,9 @@ func (r *PlaywrightRunner) Run(ctx context.Context, req Request) (Result, error)
 	if err := ctx.Err(); err != nil {
 		return Result{}, err
 	}
+	if req.ToolName == "browser.read_spa" {
+		return r.readSPA(ctx, req)
+	}
 	for id, proxy := range r.proxies {
 		if proxy.Expired() {
 			_ = proxy.Close()

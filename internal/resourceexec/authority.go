@@ -3,12 +3,14 @@ package resourceexec
 import (
 	"context"
 	"encoding/json"
+	"net/url"
 	"strings"
 	"time"
 
 	"github.com/butler/butler/internal/actionauth"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 	"github.com/butler/butler/internal/ownership"
+	"github.com/butler/butler/internal/security/egress"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -64,12 +66,22 @@ func (s *Store) TicketForAction(ctx context.Context, call *toolbrokerv1.ToolCall
 }
 
 func (s *Store) Inspect(ctx context.Context, r RuntimeRequest) (RuntimeSpec, error) {
-	return s.admit(ctx, r, false)
+	return s.admit(ctx, r, false, "prepared", "")
 }
 func (s *Store) Begin(ctx context.Context, r RuntimeRequest) (RuntimeSpec, error) {
-	return s.admit(ctx, r, true)
+	return s.admit(ctx, r, true, "prepared", "")
 }
-func (s *Store) admit(ctx context.Context, r RuntimeRequest, begin bool) (RuntimeSpec, error) {
+func (s *Store) Check(ctx context.Context, r RuntimeRequest, target string) (RuntimeSpec, error) {
+	if r.ToolName != "browser.read_spa" || len(target) > 4096 {
+		return RuntimeSpec{}, ErrDenied
+	}
+	u, err := (egress.Policy{}).ValidateURL(target)
+	if err != nil || u.Scheme != "https" {
+		return RuntimeSpec{}, ErrDenied
+	}
+	return s.admit(ctx, r, false, "running", target)
+}
+func (s *Store) admit(ctx context.Context, r RuntimeRequest, begin bool, phase, target string) (RuntimeSpec, error) {
 	tx, e := s.pool.Begin(ctx)
 	if e != nil {
 		return RuntimeSpec{}, e
@@ -79,7 +91,7 @@ func (s *Store) admit(ctx context.Context, r RuntimeRequest, begin bool) (Runtim
 	if e != nil {
 		return RuntimeSpec{}, e
 	}
-	if r.RunID != d.binding.RunID || r.ToolCallID != g.Binding.ToolCallID || r.ToolName != d.tool || r.ActionID != d.effect || r.ContractHash != d.contract || r.ArgsHash != d.args || d.phase != "prepared" {
+	if r.RunID != d.binding.RunID || r.ToolCallID != g.Binding.ToolCallID || r.ToolName != d.tool || r.ActionID != d.effect || r.ContractHash != d.contract || r.ArgsHash != d.args || d.phase != phase {
 		return RuntimeSpec{}, ErrDenied
 	}
 	ctx = ownership.WithToken(ctx, nil, ownership.Token{SessionKey: d.binding.SessionKey, RunID: d.binding.RunID, LeaseID: d.ownerLease, FenceEpoch: d.binding.LeaseEpoch})
@@ -95,6 +107,20 @@ func (s *Store) admit(ctx context.Context, r RuntimeRequest, begin bool) (Runtim
 	}
 	if e = s.checkCurrent(ctx, tx, g, d.binding, d.proof, d.effect); e != nil {
 		return RuntimeSpec{}, e
+	}
+	if target != "" {
+		original, e1 := url.Parse(g.Binding.Resource)
+		actual, e2 := url.Parse(target)
+		if e1 != nil || e2 != nil || original.Scheme != actual.Scheme || original.Host != actual.Host || g.Binding.GoalID == "" {
+			return RuntimeSpec{}, ErrDenied
+		}
+		// Scope projection only: never rewrite the persisted action, arguments,
+		// grant, spending, ticket, effect or approved filter value.
+		projected := g.Binding
+		projected.Resource = target
+		if e = actionauth.CheckTaskActionTx(ctx, tx, projected, time.Now()); e != nil {
+			return RuntimeSpec{}, e
+		}
 	}
 	if begin {
 		tag, err := tx.Exec(ctx, `UPDATE execution_resource_dispatches SET phase='running' WHERE ticket_id=$1 AND phase='prepared' AND deadline>clock_timestamp()`, d.ticket)

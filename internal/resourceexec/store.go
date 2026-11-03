@@ -200,13 +200,16 @@ func (s *Store) checkAuthority(ctx context.Context, tx pgx.Tx, g actionauth.Gran
 	if e := s.sourceGuard(ctx, tx, b.RunID); e != nil {
 		return e
 	}
+	if g.Binding.ToolName == "browser.read_spa" {
+		return actionauth.CheckOwningInputTx(ctx, tx, g)
+	}
 	return nil
 }
 func (s *Store) sessionTx(ctx context.Context, tx pgx.Tx, b resources.Binding, resource, tool string, closing bool) (time.Time, error) {
 	if singleTabTool(tool) {
 		return s.singleSessionTx(ctx, tx, b, resource)
 	}
-	if tool == "browser.open" || tool == "browser.read" || tool == "browser.open_pages" {
+	if tool == "browser.open" || tool == "browser.read" || tool == "browser.open_pages" || tool == "browser.read_spa" {
 		return time.Time{}, nil
 	}
 	var expiry time.Time

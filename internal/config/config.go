@@ -130,6 +130,7 @@ type OrchestratorConfig struct {
 }
 
 type ToolBrokerConfig struct {
+	BrowserSPAEnabled        bool
 	ExternalAuthEnabled      bool
 	BrowserControlRuntimeURL string
 	BrowserControlTokenFile  string
@@ -179,6 +180,8 @@ type ToolBrokerConfig struct {
 }
 
 type ToolBrowserConfig struct {
+	BrowserSPAEnabled       bool
+	BrowserSPAAuthorityURL  string
 	BrowserControlTokenFile string
 	Shared                  SharedConfig
 	NodeBinary              string
@@ -403,6 +406,7 @@ func loadToolBroker(get envGetter) (ToolBrokerConfig, Snapshot, error) {
 	cfg := ToolBrokerConfig{}
 	sharedSpecs := sharedSpecs("tool-broker", &cfg.Shared)
 	specs := append(sharedSpecs,
+		fieldSpec{key: "BUTLER_BROWSER_SPA_QUERY_ENABLED", component: "tool-broker", typeName: "bool", defaultValue: "false", allowedValues: []string{"true", "false"}, requiresRestart: true, assign: func(v string) { cfg.BrowserSPAEnabled = v == "true" }},
 		fieldSpec{key: "BUTLER_BROWSER_CONTROL_RUNTIME_URL", component: "tool-broker", typeName: "string", requiresRestart: true, assign: func(v string) { cfg.BrowserControlRuntimeURL = v }},
 		fieldSpec{key: "BUTLER_BROWSER_CONTROL_TOKEN_FILE", component: "tool-broker", typeName: "string", requiresRestart: true, assign: func(v string) { cfg.BrowserControlTokenFile = v }},
 		fieldSpec{key: "BUTLER_POSTGRES_URL", component: "tool-broker", typeName: "string", required: false, isSecret: true, requiresRestart: true, validate: validateOptionalURL, assign: func(v string) { cfg.Postgres.URL = v }},
@@ -448,6 +452,8 @@ func loadToolBroker(get envGetter) (ToolBrokerConfig, Snapshot, error) {
 func loadToolBrowser(get envGetter) (ToolBrowserConfig, Snapshot, error) {
 	cfg := ToolBrowserConfig{}
 	specs := append(sharedSpecs("tool-browser", &cfg.Shared),
+		fieldSpec{key: "BUTLER_BROWSER_SPA_QUERY_ENABLED", component: "tool-browser", typeName: "bool", defaultValue: "false", allowedValues: []string{"true", "false"}, requiresRestart: true, assign: func(v string) { cfg.BrowserSPAEnabled = v == "true" }},
+		fieldSpec{key: "BUTLER_BROWSER_SPA_AUTHORITY_URL", component: "tool-browser", typeName: "string", defaultValue: "", requiresRestart: true, assign: func(v string) { cfg.BrowserSPAAuthorityURL = strings.TrimSpace(v) }},
 		fieldSpec{key: "BUTLER_BROWSER_CONTROL_TOKEN_FILE", component: "tool-browser", typeName: "string", requiresRestart: true, assign: func(v string) { cfg.BrowserControlTokenFile = v }},
 		fieldSpec{key: "BUTLER_TOOL_BROWSER_NODE_BINARY", component: "tool-browser", typeName: "string", required: false, defaultValue: "node", requiresRestart: true, validate: validateNonEmpty, assign: func(v string) { cfg.NodeBinary = v }},
 		fieldSpec{key: "BUTLER_TOOL_BROWSER_SCRIPT_PATH", component: "tool-browser", typeName: "string", required: false, defaultValue: "apps/tool-browser/scripts/browser_runtime.mjs", requiresRestart: true, validate: validateNonEmpty, assign: func(v string) { cfg.HelperScriptPath = v }},

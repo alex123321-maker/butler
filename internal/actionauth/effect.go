@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/butler/butler/internal/browserauth"
 	"github.com/butler/butler/internal/browserpage"
+	"github.com/butler/butler/internal/browserspa"
 	"github.com/butler/butler/internal/browsersso"
 	"net/url"
 	"strings"
@@ -159,6 +160,15 @@ func ResolveEffectPolicy(b ActionBinding, contract *toolbrokerv1.ToolContract, c
 		return p, nil
 	}
 	if b.Effect == EffectRead {
+		if b.ToolName == browserspa.Tool {
+			if !browserspa.ValidContract(contract) || len(b.CredentialRefs) != 0 || b.GoalID == "" || len(calls) != 1 || calls[0] == nil {
+				return p, browserspa.ErrDenied
+			}
+			a, e := browserspa.Parse(calls[0].ArgsJson)
+			if e != nil || a.URL != b.Resource {
+				return p, browserspa.ErrDenied
+			}
+		}
 		if b.ToolName == "browser.navigate" && b.ContractRevision == "4" {
 			if p.RetrySafety != "read_only" || p.VerificationMethod != BrowserGETVerification || len(b.CredentialRefs) != 0 || contract.GetSupportsCredentialRefs() || p.IdempotencyHeader != "" || p.ScopeOrigin != "" || p.VerificationURL != "" {
 				return p, fmt.Errorf("navigation requires its exact credential-free revision4 contract")

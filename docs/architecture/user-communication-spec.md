@@ -1,5 +1,19 @@
 # Butler — общение агента с пользователем
 
+On restart of an already verified production owner profile, unavailable Telegram
+`getMe` no longer blocks Web/Core startup. This requires exact current enabled,
+verified owner/binding versions for both channels and the already pinned numeric
+bot cursor in PostgreSQL. First bootstrap, changed identity, foreign ownership,
+revocation or missing metadata still fail closed. Restored metadata is not a
+fabricated API identity proof. The immutable client token remains unverified and
+every non-identity Bot API operation is blocked until real `getMe` confirms the
+configured username and numeric ID. Existing explicit polling/delivery waits for
+this verification; Web retains its independent delivery records. If a sender is
+called before verification, no message is dispatched: its known local absence
+uses the existing bounded outbox retry rules, never an UNKNOWN-message retry.
+Current send authorization is repeated after a potentially blocking identity
+probe. Secrets, proxy credentials and API URLs remain absent from diagnostics.
+
 Before consuming a publication grant, Core can reject unselected
 `communication.*.source_refs` as a known draft error. The owning communication
 store checks the live owner/session/run/Input/Task and exact current-run Catalog

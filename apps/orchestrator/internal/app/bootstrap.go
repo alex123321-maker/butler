@@ -539,6 +539,9 @@ func newApp(ctx context.Context, telegramOptions *TelegramCommunicationOptions) 
 			postgres.Close()
 			return nil, err
 		}
+		if telegramFlow.identityPending {
+			log.Warn("Telegram identity check unavailable; restoring verified owner metadata for Web while Telegram operations remain identity-gated")
+		}
 		communicationKernel = telegramFlow.store
 		communicationAdmission = telegramFlow.admit
 		finalResults.Communication = telegramFlow.store

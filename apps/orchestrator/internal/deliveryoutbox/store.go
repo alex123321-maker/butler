@@ -197,7 +197,7 @@ func DeliveryOutcome(m Message, o Outcome) (string, string, time.Duration) {
 }
 func safeCode(code string) string {
 	switch code {
-	case "", "telegram_rejected", "telegram_unconfigured", "telegram_chat_not_allowed", "transport_outcome_unknown", "response_outcome_unknown", "missing_channel_ack":
+	case "", "telegram_rejected", "telegram_unconfigured", "telegram_chat_not_allowed", "telegram_identity_unavailable", "transport_outcome_unknown", "response_outcome_unknown", "missing_channel_ack":
 		return code
 	}
 	return "channel_error"

@@ -1,21 +1,30 @@
 name: Browser network boundary
 on:
   pull_request:
-    paths: ['.github/workflows/browser-network.yml', 'scripts/dev/browser-network-tests.sh', 'internal/security/egress/**', 'apps/tool-browser/**', 'go.mod', 'go.sum']
+    paths: ['.github/workflows/browser-network.yml', 'scripts/dev/browser-network-tests.sh', 'internal/**', 'apps/tool-browser/**', 'apps/tool-broker/**', 'cmd/browser-spa-eval/**', 'go.mod', 'go.sum']
   push:
     branches: [main]
-    paths: ['.github/workflows/browser-network.yml', 'scripts/dev/browser-network-tests.sh', 'internal/security/egress/**', 'apps/tool-browser/**', 'go.mod', 'go.sum']
+    paths: ['.github/workflows/browser-network.yml', 'scripts/dev/browser-network-tests.sh', 'internal/**', 'apps/tool-browser/**', 'apps/tool-broker/**', 'cmd/browser-spa-eval/**', 'go.mod', 'go.sum']
 permissions:
   contents: read
 jobs:
   proxy-chromium:
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: pgvector/pgvector:pg17
+        env: {POSTGRES_HOST_AUTH_METHOD: trust, POSTGRES_DB: browser_spa_test}
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s --health-timeout 5s --health-retries 12
     env:
       GOCACHE: ${{ github.workspace }}/.cache/go-build-linux
       GOMODCACHE: ${{ github.workspace }}/.cache/go-mod
       PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/.cache/ms-playwright
       NPM_CONFIG_CACHE: ${{ github.workspace }}/.cache/npm
+      BUTLER_TEST_ACTIONAUTH_POSTGRES_URL: postgres://postgres@127.0.0.1:5432/browser_spa_test?sslmode=disable
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
