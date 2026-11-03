@@ -2,6 +2,7 @@ package actionauth
 
 import (
 	"github.com/butler/butler/internal/browserpage"
+	"github.com/butler/butler/internal/browserspa"
 	"github.com/butler/butler/internal/browsersso"
 	"github.com/butler/butler/internal/communicationcontrol"
 	"github.com/butler/butler/internal/credentialcontrol"
@@ -114,6 +115,12 @@ func (s *Service) binding(ctx context.Context, call *toolbrokerv1.ToolCall, cont
 	b, _, err := BuildBinding(StableActionID(call.GetRunId(), call.GetToolCallId()), call, contract, c)
 	if err != nil {
 		return b, false, err
+	}
+	if call.ToolName == browserspa.Tool {
+		a, e := browserspa.Parse(call.ArgsJson)
+		if e != nil || !browserspa.ValidContract(contract) || b.Resource != a.URL || b.Effect != EffectRead || b.GoalID == "" || b.MandateID == "" || b.TaskID == "" || c.Authority == nil || c.Delegation != nil || len(b.CredentialRefs) != 0 {
+			return b, false, browserspa.ErrDenied
+		}
 	}
 	if call.ToolName == browsersso.Tool || call.ToolName == browsersso.RequestTool {
 		if c.Delegation != nil {
@@ -380,7 +387,7 @@ func (s *Service) Authorize(ctx context.Context, call *toolbrokerv1.ToolCall, co
 	if communicationcontrol.IsTool(call.GetToolName()) && (!c.CommunicationReady || c.CommunicationMode != "explicit" || !contains(c.CommunicationMethods, call.GetToolName()) || c.Delegation != nil || CheckDenyOverrides(b, c.DenyTools, c.DenyResources) != nil) {
 		return Grant{}, communicationcontrol.ErrDenied
 	}
-	if communicationcontrol.IsTool(call.GetToolName()) || strings.HasPrefix(call.GetToolName(), "schedule.") || call.GetToolName() == "single_tab.bind.guarded" || call.GetToolName() == "memory.propose_candidate" || call.GetToolName() == "messages.process" || (isMemoryRead(call.GetToolName()) || toolcatalog.IsTool(call.GetToolName())) || strings.HasPrefix(call.GetToolName(), "workspace.") {
+	if call.GetToolName() == browserspa.Tool || communicationcontrol.IsTool(call.GetToolName()) || strings.HasPrefix(call.GetToolName(), "schedule.") || call.GetToolName() == "single_tab.bind.guarded" || call.GetToolName() == "memory.propose_candidate" || call.GetToolName() == "messages.process" || (isMemoryRead(call.GetToolName()) || toolcatalog.IsTool(call.GetToolName())) || strings.HasPrefix(call.GetToolName(), "workspace.") {
 		g.InputClaimHash = c.InputClaimHash
 	}
 	if c.LeaseExpiresAt.Before(g.ExpiresAt) {
@@ -453,7 +460,7 @@ func (s *Service) Verify(ctx context.Context, call *toolbrokerv1.ToolCall, contr
 	if err != nil || g.State != "authorized" || !g.ExpiresAt.After(s.now()) || g.Binding.ActionHash != b.ActionHash || g.LeaseID != c.LeaseID || g.LeaseEpoch != c.LeaseEpoch || g.AutonomyMode != c.AutonomyMode {
 		return Grant{}, fmt.Errorf("dispatch grant is stale, changed, revoked or already dispatched")
 	}
-	if (communicationcontrol.IsTool(call.GetToolName()) || credentialcontrol.IsTool(call.GetToolName()) || strings.HasPrefix(call.GetToolName(), "schedule.") || strings.HasPrefix(call.GetToolName(), "workspace.") || (isMemoryRead(call.GetToolName()) || toolcatalog.IsTool(call.GetToolName())) || call.GetToolName() == "messages.process") && (g.InputClaimHash == "" || g.InputClaimHash != c.InputClaimHash) {
+	if (call.GetToolName() == browserspa.Tool || communicationcontrol.IsTool(call.GetToolName()) || credentialcontrol.IsTool(call.GetToolName()) || strings.HasPrefix(call.GetToolName(), "schedule.") || strings.HasPrefix(call.GetToolName(), "workspace.") || (isMemoryRead(call.GetToolName()) || toolcatalog.IsTool(call.GetToolName())) || call.GetToolName() == "messages.process") && (g.InputClaimHash == "" || g.InputClaimHash != c.InputClaimHash) {
 		return Grant{}, fmt.Errorf("original owning input claim is no longer current")
 	}
 	if (s.approvedCredentialPreparation(ctx, call, contract) || s.approvedCredentialLogin(ctx, call, contract)) && (g.InputClaimHash == "" || g.InputClaimHash != c.InputClaimHash) {

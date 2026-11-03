@@ -4,7 +4,7 @@ Issue [#165](https://github.com/alex123321-maker/butler/issues/165) extends the
 browser network, not model-provider transport. Tool Broker continues to own
 authority, credentials and effects; Go owns the private egress proxy; the
 reviewed Playwright helper executes the bounded browser operation. This document
-separates the first implemented foundation from the remaining target.
+separates the legacy foundation from the opt-in bounded SPA profile.
 
 ## Implemented foundation
 
@@ -39,7 +39,19 @@ GET/HEAD restrictions, page ownership, protected login and UNKNOWN/no-replay
 remain independent. HTTP fixture resolver/dial seams exist only in tests.
 No new dependency, public port, operator flag or database migration is added.
 
-## Remaining target; not enabled by the foundation
+## Bounded SPA profile, separate from legacy contexts
+
+`browser.read_spa` is the default-disabled, one-operation profile specified in
+[browser-spa-query-protocol.md](browser-spa-query-protocol.md). Its Go TLS relay
+checks page and worker requests, permits strictly parsed GraphQL query POST and
+typed read subscriptions, and checks current PostgreSQL authority throughout.
+It uses fresh Chromium with an ephemeral public SPKI pin; remote TLS remains
+normally verified. A combined4MiB traffic reservation, request/message counts,
+20s lifetime and terminal closure apply. No arbitrary POST/WS classification by
+the model, credential injection, reusable browser handle or thaw is added.
+
+The following restrictions continue to apply to **legacy** contexts. They are
+not lifted by enabling the separate profile:
 
 1. **POST/GraphQL loading.** An intent to read does not make a POST safe. Keep old
    read/prepare contracts strict. A new interaction profile must pin the actual
@@ -47,7 +59,7 @@ No new dependency, public port, operator flag or database migration is added.
    Broker, account for background effects, retain unknown outcomes and never
    reuse a consumed mutation after lost response. A fixture query plus filter
    change must traverse production Core/Broker/runtime with recipient evidence.
-2. **WS/WSS and bounded streaming.** WebSockets stay denied. A future private
+2. **WS/WSS and bounded streaming.** Legacy WebSockets stay denied. The separate
    connection capability must check the actual URL/origin, public DNS/IP, TLS,
    redirects and each released message, plus connection/byte/time/reconnect
    bounds. An opaque CONNECT is not sufficient application-level authority.
@@ -57,7 +69,8 @@ No new dependency, public port, operator flag or database migration is added.
    new online revocation subscription. Prove propagation from durable stop,
    mandate revocation and owner takeover through the production composition to
    every active stream, with independent recipient observations after ACK.
-4. **Service workers.** They stay blocked. Before enabling, prove interception
+4. **Service workers.** They stay blocked in legacy contexts. The SPA profile
+   must prove interception
    of actual worker-originated requests, redirects, cache/update/restart and
    worker lifetime with the same fences. Ordinary page interception is not
    evidence of worker coverage; an uncontrolled worker path blocks this slice.

@@ -26,11 +26,12 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
-    "^(internal/security/egress/|scripts/dev/browser-network-tests[.]sh$|[.]github/workflows/browser-network[.]yml$|docs/architecture/browser-network-contract[.]md$)" {
+    "^(internal/(browserspa/|security/(egress|spaproxy)/|actionauth/spa|browsercontrol/spa|resourceexec/live)|apps/tool-(browser/internal/runtime|broker/internal/(app|broker))/spa|cmd/browser-spa-eval/|scripts/dev/browser-network-tests[.]sh$|[.]github/workflows/browser-network[.]yml$|docs/architecture/browser-(network-contract|spa-query-protocol)[.]md$|deploy/docker-compose.browser-spa[.]yml$)" {
       [void]$specs.Add("docs/architecture/browser-network-contract.md")
       [void]$specs.Add("docs/architecture/browser-session-contract.md")
       [void]$specs.Add("docs/architecture/action-authorization-contract.md")
-      [void]$tests.Add("bash scripts/dev/browser-network-tests.sh: mandatory proxy race/vet and actual Chromium SSE/freeze/reconnect plus legacy guards, no skipped cases. This foundation does not enable WS/service workers or authorize POST queries; native model/delivery and inclusive timing remain separate acceptance in #165.")
+      [void]$specs.Add("docs/architecture/browser-spa-query-protocol.md")
+      [void]$tests.Add("bash scripts/dev/browser-network-tests.sh with isolated *_test PostgreSQL: mandatory SPA contract/bootstrap/running authority, proxy race/vet, actual Chromium POST/typed WSS/SSE/worker update/cache/restart/freeze/faults and legacy guards, zero required skips. Owner UI and native model/delivery with inclusive wall time remain separate acceptance; no fixture production exemption.")
       continue
     }
     "^(internal/externalauth/|internal/(credentials|actionauth|budget|config)/external_auth|apps/orchestrator/internal/(app/credential_external|api/browser_external_auth)|migrations/111_browser_external_auth|web/tests/e2e/credential-external|docs/architecture/browser-google-auth[.]md$)" {

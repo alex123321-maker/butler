@@ -1,0 +1,10 @@
+# Opt in only with server-browser composition and its dedicated private token.
+# No new container, published port, model credential or general POST permission.
+services:
+  tool-browser:
+    environment:
+      BUTLER_BROWSER_SPA_QUERY_ENABLED: "true"
+      BUTLER_BROWSER_SPA_AUTHORITY_URL: http://tool-broker:8080/internal/browser-spa-resources
+  tool-broker:
+    environment:
+      BUTLER_BROWSER_SPA_QUERY_ENABLED: "true"

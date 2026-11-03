@@ -38,7 +38,7 @@ func SecureClient(client *http.Client) *http.Client {
 
 func NewTransport(policy Policy) *Transport {
 	t := &Transport{policy: policy}
-	t.base = &http.Transport{Proxy: nil, DialContext: t.dial, TLSClientConfig: &tls.Config{MinVersion: tls.VersionTLS12}, TLSHandshakeTimeout: 10 * time.Second, ResponseHeaderTimeout: 15 * time.Second, IdleConnTimeout: 30 * time.Second, MaxResponseHeaderBytes: 32 * 1024, MaxIdleConns: 32, MaxIdleConnsPerHost: 4, DisableKeepAlives: true, ForceAttemptHTTP2: true}
+	t.base = &http.Transport{Proxy: nil, DialContext: t.dial, TLSClientConfig: &tls.Config{MinVersion: tls.VersionTLS12, RootCAs: policy.TLSRoots}, TLSHandshakeTimeout: 10 * time.Second, ResponseHeaderTimeout: 15 * time.Second, IdleConnTimeout: 30 * time.Second, MaxResponseHeaderBytes: 32 * 1024, MaxIdleConns: 32, MaxIdleConnsPerHost: 4, DisableKeepAlives: true, ForceAttemptHTTP2: true}
 	return t
 }
 
@@ -62,6 +62,18 @@ func (t *Transport) dial(ctx context.Context, network, address string) (net.Conn
 		}
 	}
 	return nil, ErrDenied
+}
+
+// DialContext supplies the same checked DNS/pinned dial to a protocol client
+// that owns TLS (for example WSS). It grants no private address or port exception.
+func (t *Transport) DialContext(ctx context.Context, network, address string) (net.Conn, error) {
+	if network != "tcp" && network != "tcp4" && network != "tcp6" {
+		return nil, ErrDenied
+	}
+	if _, err := t.policy.ValidateURL("https://" + address); err != nil {
+		return nil, ErrDenied
+	}
+	return t.dial(ctx, network, address)
 }
 
 func (t *Transport) RoundTrip(request *http.Request) (*http.Response, error) {

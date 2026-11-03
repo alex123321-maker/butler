@@ -21,8 +21,9 @@ registered by it. See [native-host/CAS and gates](../../docs/architecture/single
 
 `resourceexec` is an optional boundary between the existing Tool Broker journal,
 finite shared budget and `resources.Store`. It protects the controlled
-`browser.*` runtime. No production flag, bootstrap, registry or Compose change
-enables it. A resource ticket grants no tool, credential, source or model right.
+`browser.*` runtime. The original controlled-page composition remains separate
+from the new opt-in bounded SPA bootstrap described below. A resource ticket
+grants no tool, credential, source or model right.
 
 An immutable operator `Profile` pins one stable executor ID, its private runtime
 target and exact deployed contract hashes. Browser session IDs come from the
@@ -117,3 +118,20 @@ The same durable rejection path covers credential-free guarded browser reads,
 including navigation revision4. A closed correlated proof must survive current
 authority and durable Finish; lost Finish, arbitrary helper errors and in-flight
 loss remain UNKNOWN. Rejection receives no success ACK or new session mapping.
+
+## Bounded SPA read profile
+
+The opt-in `browser.read_spa` contract is defined in
+`docs/architecture/browser-spa-query-protocol.md`. It uses the existing owner-goal,
+Input claim, immutable action/budget and one-use resource ticket. Private live
+checks revalidate running authority and actual destination before network
+release. A fresh, separate Chromium process routes page and service-worker
+HTTPS/WSS through the Go TLS gate. Fixed GraphQL read grammar/state machines
+exclude arbitrary mutations and auth payloads. Combined remote traffic is capped
+at4MiB within the ordinary egress reservation. Terminal freeze precedes visible
+observation; browser/worker/storage are destroyed before return. There is no
+continuation, thaw, credential input or restored session. Lost runtime/finish
+remains UNKNOWN/spent; current result authority and proof are required for data
+release. Legacy browser preparation/login/page contracts remain independent.
+Both Broker/runtime flags default off and require authenticated private resource
+and capability endpoints. Component success does not establish native delivery.

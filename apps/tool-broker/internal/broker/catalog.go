@@ -10,6 +10,7 @@ import (
 	"github.com/butler/butler/apps/tool-broker/internal/registry"
 	"github.com/butler/butler/internal/actionauth"
 	"github.com/butler/butler/internal/browserpage"
+	"github.com/butler/butler/internal/browserspa"
 	"github.com/butler/butler/internal/browsersso"
 	"github.com/butler/butler/internal/delegation"
 	"github.com/butler/butler/internal/extensions"
@@ -29,6 +30,7 @@ type TaskCatalog struct {
 	GuardedTabOnly              bool
 	BrowserResourcesUnavailable bool
 	PageToolsReady              bool
+	SPAReady                    bool
 	Mandates                    interface {
 		GetMandate(context.Context, string) (actionauth.Mandate, error)
 	}
@@ -102,6 +104,9 @@ func (c *TaskCatalog) ListForRun(ctx context.Context, run, query string, limit i
 			continue
 		}
 		if contract.ToolName == browsersso.InspectTool && !c.PageToolsReady {
+			continue
+		}
+		if contract.ToolName == browserspa.Tool && (!c.SPAReady || a.TaskID == "" || a.Authority == nil || len(a.InputClaimHash) != 64 || a.Delegation != nil || !browserspa.ValidContract(contract)) {
 			continue
 		}
 		if workspaceexec.Protected(contract.GetToolName()) && (a.TaskID == "" || !a.WorkspaceReady || !workspaceexec.ExactContract(contract)) {

@@ -11,6 +11,7 @@ import (
 	"github.com/butler/butler/internal/actionauth"
 	"github.com/butler/butler/internal/browserauth"
 	"github.com/butler/butler/internal/browserpage"
+	"github.com/butler/butler/internal/browserspa"
 	"github.com/butler/butler/internal/browsersso"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -119,6 +120,9 @@ func (s *Store) Record(ctx context.Context, call *toolbrokerv1.ToolCall, grant a
 	if result.GetRunId() != call.GetRunId() || result.GetToolCallId() != call.GetToolCallId() || result.GetToolName() != call.GetToolName() {
 		return ErrDenied
 	}
+	if call.ToolName == browserspa.Tool {
+		return s.recordSPA(ctx, call, grant, result)
+	}
 	if call.ToolName == browsersso.Tool {
 		return s.recordSSO(ctx, call, grant.Binding, result)
 	}
@@ -190,7 +194,7 @@ func (s *Store) Record(ctx context.Context, call *toolbrokerv1.ToolCall, grant a
 // Wait happens before Verify/Claim and budget spend. Expiry or cancellation
 // cannot turn an unacknowledged owner release into permission to execute.
 func (s *Store) Before(ctx context.Context, call *toolbrokerv1.ToolCall) (context.Context, error) {
-	if !strings.HasPrefix(call.GetToolName(), "browser.") || call.GetToolName() == "browser.open" || call.GetToolName() == "browser.read" || call.GetToolName() == browserpage.Open {
+	if !strings.HasPrefix(call.GetToolName(), "browser.") || call.GetToolName() == "browser.open" || call.GetToolName() == "browser.read" || call.GetToolName() == browserspa.Tool || call.GetToolName() == browserpage.Open {
 		return ctx, nil
 	}
 	var args struct {

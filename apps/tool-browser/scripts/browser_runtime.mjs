@@ -316,8 +316,79 @@ async function observe(session, selector = 'body') {
     links: links.map(link => ({ text: redact(session, link.text), href: visibleURL(session, link.href) })) }
 }
 
+let spaSession
+async function closeSPA() {
+  const current = spaSession
+  spaSession = undefined
+  if (!current) return
+  clearTimeout(current.timer)
+  await current.browser.close().catch(() => {})
+  current.session.secrets.clear()
+}
+
+async function executeSPA(request) {
+  const config = request.spa
+  if (!config || !config.args || config.args.url !== request.url) return errorResult('spa_profile_denied', 'bounded SPA profile required')
+  if (config.phase === 'observe') {
+    const current = spaSession
+    if (!current || config.nonce !== current.nonce || current.args !== JSON.stringify(config.args)) return errorResult('spa_session_lost', 'SPA observation context is unavailable')
+    try {
+      current.session.networkFrozen = true
+      return await observe(current.session)
+    } finally { await closeSPA() }
+  }
+  if (config.phase !== 'run' || spaSession || !/^[A-Za-z0-9+/]{43}=$/.test(config.spki || '') || !request.proxy_url || !Number.isFinite(Date.parse(request.expires_at)) || Date.parse(request.expires_at) <= Date.now()) return errorResult('spa_profile_denied', 'fresh bounded SPA context required')
+  const relay = new URL(request.proxy_url)
+  if (relay.protocol !== 'http:' || relay.hostname !== '127.0.0.1' || relay.username || relay.password || relay.pathname !== '/') return errorResult('spa_profile_denied', 'private SPA relay required')
+  const privateBrowser = await chromium.launch({ headless: true, proxy: { server: request.proxy_url, bypass: '' }, args: ['--disable-quic', '--disable-background-networking', '--force-webrtc-ip-handling-policy=disable_non_proxied_udp', '--proxy-bypass-list=<-loopback>', '--ignore-certificate-errors-spki-list=' + config.spki] })
+  let ready = false
+  try {
+    const context = await privateBrowser.newContext({ viewport: { width: 1280, height: 720 }, serviceWorkers: 'allow', acceptDownloads: false })
+    // All HTTPS is terminated by the Go relay, including worker script updates
+    // that Playwright page routes cannot intercept. Remote TLS stays verified.
+    const page = await context.newPage()
+    context.on('page', extra => { if (extra !== page) void extra.close().catch(() => {}) })
+    const session = { context, page, scope: new URL(request.url).origin, version: 0, secrets: new Set(), frames: new Map(), managed: false, networkFrozen: false }
+    const nonce = randomUUID()
+    spaSession = { browser: privateBrowser, session, nonce, args: JSON.stringify(config.args), timer: setTimeout(() => { void closeSPA() }, Math.max(1, Date.parse(request.expires_at) - Date.now())) }
+    await page.goto(request.url, { waitUntil: 'domcontentloaded', timeout: 8000 })
+    if (config.args.ready_selector) await page.locator(config.args.ready_selector).waitFor({ state: 'visible', timeout: 4000 })
+    const settle = config.args.settle_ms || 1000
+    await page.waitForTimeout(settle)
+    if (config.args.filter) {
+      const selector = page.locator(config.args.filter.selector)
+      if (await selector.count() !== 1) throw new Error('ambiguous public filter')
+      await selector.evaluate((element, value) => {
+        const type = String(element.type || '').toLowerCase()
+        const rect = element.getBoundingClientRect()
+        const style = getComputedStyle(element)
+        if (!element.isConnected || element.disabled || element.readOnly || rect.width <= 0 || rect.height <= 0 || style.visibility !== 'visible' || style.display === 'none' || !['text', 'search', 'select-one'].includes(type)) throw new Error('unsupported public filter')
+        if (type === 'select-one') {
+          const matches = [...element.options].filter(option => option.value === value && !option.disabled)
+          if (matches.length !== 1) throw new Error('unsupported filter option')
+          element.value = value
+        } else {
+          Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(element, value)
+        }
+        element.dispatchEvent(new Event('input', { bubbles: true }))
+        element.dispatchEvent(new Event('change', { bubbles: true }))
+      }, config.args.filter.value)
+      await page.waitForTimeout(settle)
+    }
+    if (new URL(page.url()).origin !== session.scope) throw new Error('SPA origin changed')
+    ready = true
+    return { ok: true, spa_nonce: nonce }
+  } finally {
+    if (!ready) {
+      await closeSPA()
+      await privateBrowser.close().catch(() => {})
+    }
+  }
+}
+
 async function executeSingle(request) {
   const tool = request.tool_name
+  if (tool === 'browser.read_spa') return executeSPA(request)
   if (tool === 'browser.read') {
     const session = await newSession(request)
     try { await session.page.goto(request.url, { waitUntil: 'domcontentloaded', timeout: 15000 }); return await observe(session) }
@@ -1043,5 +1114,6 @@ try {
   }
 } finally {
   for (const id of sessions.keys()) await closeSession(id)
+  await closeSPA()
   await browser?.close().catch(() => {})
 }

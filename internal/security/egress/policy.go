@@ -3,6 +3,7 @@ package egress
 
 import (
 	"context"
+	"crypto/x509"
 	"errors"
 	"net"
 	"net/netip"
@@ -27,6 +28,9 @@ type Policy struct {
 	AllowedPorts   []string
 	Resolver       Resolver
 	Dial           DialFunc
+	// TLSRoots is an explicit trusted construction seam for isolated HTTPS
+	// fixtures/private operator PKI. Nil uses system roots; verification remains on.
+	TLSRoots *x509.CertPool
 }
 
 func (p Policy) ValidateURL(raw string) (*url.URL, error) {

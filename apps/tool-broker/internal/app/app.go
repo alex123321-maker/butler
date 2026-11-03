@@ -18,6 +18,7 @@ import (
 	"github.com/butler/butler/apps/tool-broker/internal/runtimeclient"
 	"github.com/butler/butler/internal/actionauth"
 	"github.com/butler/butler/internal/browsercontrol"
+	"github.com/butler/butler/internal/browserspa"
 	"github.com/butler/butler/internal/browsersso"
 	"github.com/butler/butler/internal/budget"
 	"github.com/butler/butler/internal/communicationcontrol"
@@ -82,6 +83,9 @@ func newApp(ctx context.Context, communicationEndpoint string, ownerProfile *com
 	if err != nil {
 		return nil, err
 	}
+	if cfg.BrowserSPAEnabled && (cfg.Postgres.URL == "" || cfg.ActionAuthorityTokenFile == "" || cfg.BrowserControlRuntimeURL == "" || cfg.GuardedTabRuntimeEnabled) {
+		return nil, browserspa.ErrDenied
+	}
 	if cfg.MemoryTemporalEnabled && (!factcontrol.ReleaseQualified || !cfg.MemoryReadEnabled) {
 		return nil, factcontrol.ErrDenied
 	}
@@ -93,6 +97,9 @@ func newApp(ctx context.Context, communicationEndpoint string, ownerProfile *com
 		return nil, err
 	}
 	for _, c := range registryStore.List("", true) {
+		if c.GetToolName() == browserspa.Tool {
+			return nil, fmt.Errorf("SPA query contract requires canonical private startup composition")
+		}
 		if strings.HasPrefix(c.GetToolName(), "credentials.") {
 			return nil, fmt.Errorf("credential contracts require canonical private composition")
 		}
@@ -187,6 +194,7 @@ func newApp(ctx context.Context, communicationEndpoint string, ownerProfile *com
 	var converterHandler http.Handler
 	var guardedResourceHandler http.Handler
 	var browserControlHandler http.Handler
+	var browserSPAResourceHandler http.Handler
 	var browserScopeReader *browsercontrol.Store
 	var converterConn *grpc.ClientConn
 	ready := false
@@ -417,6 +425,22 @@ func newApp(ctx context.Context, communicationEndpoint string, ownerProfile *com
 			return nil, workspaceErr
 		}
 		admissions := broker.ResourceAdmissions{Workspace: workspaceStore, ServerBrowser: browserControlHandler != nil}
+		spaStore, spaHandler, spaErr := configureServerSPA(ctx, cfg, postgres.Pool(), registryStore, router, budgetController, sources)
+		if spaErr != nil {
+			postgres.Close()
+			return nil, spaErr
+		}
+		if spaStore != nil {
+			admissions.SPA = &broker.GuardedTabAdmission{Store: spaStore}
+			catalog.SPAReady = true
+			browserSPAResourceHandler = spaHandler
+			executor, err = broker.NewSPAExecutor(spaStore, executor)
+			if err != nil {
+				postgres.Close()
+				return nil, err
+			}
+			server.SetCatalogExecutor(executor)
+		}
 		if cfg.GuardedTabRequestEnabled {
 			admissions.Browser = &broker.GuardedTabAdmission{Store: resourceStore}
 		}
@@ -441,7 +465,7 @@ func newApp(ctx context.Context, communicationEndpoint string, ownerProfile *com
 			}
 			server.SetCatalogExecutor(executor)
 		}
-		if resourceStore != nil || workspaceStore != nil {
+		if resourceStore != nil || workspaceStore != nil || spaStore != nil {
 			authorizationStore.SetDispatchClaimGuard(admissions)
 			server.SetResourceAdmission(admissions)
 		}
@@ -559,6 +583,9 @@ func newApp(ctx context.Context, communicationEndpoint string, ownerProfile *com
 	httpMux := http.NewServeMux()
 	if browserControlHandler != nil {
 		httpMux.Handle(browsercontrol.Path, browserControlHandler)
+	}
+	if browserSPAResourceHandler != nil {
+		httpMux.Handle(browserspa.AuthorityPath, browserSPAResourceHandler)
 	}
 	if guardedResourceHandler != nil {
 		httpMux.Handle("/internal/guarded-tab-resources", guardedResourceHandler)
