@@ -1,5 +1,11 @@
 # Exact action authorization
 
+The #165 [browser network foundation](browser-network-contract.md) adds local
+proxy resource ceilings without a new action or permission. POST queries do not
+become reads by model intent; WS/service workers remain denied. Proxy freeze and
+expiry do not establish a new durable authority-revocation subscription, and
+stream completion cannot confirm an opaque external effect.
+
 The separate `browser.sso_login` revision1 can waive duplicate submit approval
 only through its exact protected RP/IdP consent and two matching `ssoq_`
 references. Its action hash includes the trusted RP page binding and complete

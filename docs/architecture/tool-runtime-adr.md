@@ -1,5 +1,11 @@
 # Butler — Tooling and Execution Specification
 
+The [browser network foundation](browser-network-contract.md) bounds private
+proxy concurrency, lifetime admissions and cumulative HTTP/CONNECT responses.
+SSE proxy flushing retains preparation freeze and independent byte accounting;
+it grants no new tool, POST authority, WS or worker capability. The dedicated
+browser-network CI requires proxy race/vet and actual Chromium regressions.
+
 `credentials.request_external_login` is a default-disabled prepare-only Broker
 capability. It binds the exact managed RP document/version/epoch and all fixed
 provider resources to current owner-goal authority. It releases no fields to a
