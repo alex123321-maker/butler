@@ -8,6 +8,7 @@ export NPM_CONFIG_CACHE="$PWD/.cache/npm"
 export PLAYWRIGHT_BROWSERS_PATH="${PLAYWRIGHT_BROWSERS_PATH:-$PWD/.cache/ms-playwright}"
 reports="$PWD/.cache/browser-network-ci"
 mkdir -p "$reports"
+node --check scripts/dev/browser-spa-owner-stop.mjs
 
 required() {
   local report="$reports/$1.jsonl"

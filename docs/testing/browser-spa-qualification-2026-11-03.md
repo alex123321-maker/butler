@@ -42,3 +42,13 @@ Mechanical tests make zero model calls. Their durations measure the test,
 not agent speed. Native timings start at accepted ingress and end at actual
 delivery; model deliberation, discovery, queues, errors, owner waits and delivery
 remain included. Historical scenarios have not been replayed for old metrics.
+
+The first controlled rollout failed at Core's Telegram identity startup probe
+and rolled back. Normal TLS roots and independent encrypted routes reached the
+Bot API, but the configured bot's getMe timed out before any response; an invalid
+synthetic token returned401. Rollback preserved environment maps and mount
+source/destination/permissions (array order differed). This is not a native SPA
+attempt. A restart-only recovery change now requires exact existing verified
+PG owner/binding/bot-cursor metadata and keeps all Telegram operations gated on
+real identity confirmation. It restores independent Web availability without
+claiming Telegram readiness or delivery. New source requires fresh CI.

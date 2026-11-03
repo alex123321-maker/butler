@@ -1601,3 +1601,11 @@ The compact browser strategy directs managed native-form SSO through bounded
 and returned candidate scopes replace guessed form selectors/paths. The whole
 strategy fits the normal assembled-section limit; the mandatory SSO CI profile
 checks its retained context, owner-control and continuity instructions.
+
+An already verified immutable owner profile may restore Web/Core after a
+Telegram identity probe times out, only when both exact channel bindings and
+the numeric bot cursor remain current in PostgreSQL. New or mismatched profiles
+fail closed. Telegram polling and every client operation stay gated on real
+identity verification; no send permission comes from restored metadata. Fixed
+warnings and bounded pre-dispatch delivery retries distinguish this outage from
+an unknown sent message. See `docs/architecture/user-communication-spec.md`.

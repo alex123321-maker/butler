@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"io"
 	"mime/multipart"
 	"net/http"
@@ -13,6 +14,8 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/butler/butler/apps/orchestrator/internal/artifacts"
@@ -22,9 +25,44 @@ import (
 )
 
 type Client struct {
-	token string
-	base  string
-	http  *http.Client
+	token            string
+	base             string
+	http             *http.Client
+	pinnedName       string
+	pinnedID         int64
+	identityMu       sync.Mutex
+	identityVerified atomic.Bool
+}
+
+var ErrIdentityMismatch = errors.New("Telegram bot identity differs from the pinned operator profile")
+
+func (c *Client) IdentityVerificationPending() bool {
+	return c != nil && c.pinnedID > 0 && !c.identityVerified.Load()
+}
+
+// RequireIdentity is trusted startup configuration, never model input. The
+// immutable client token must pass GetMe before any other Bot API operation.
+func (c *Client) RequireIdentity(name string, id int64) error {
+	if c == nil || c.pinnedID != 0 || id <= 0 || !regexp.MustCompile(`^[A-Za-z0-9_]{1,64}$`).MatchString(name) {
+		return ErrUnavailable
+	}
+	c.pinnedName, c.pinnedID = name, id
+	return nil
+}
+func (c *Client) ensureIdentity(ctx context.Context) error {
+	if c == nil {
+		return ErrUnavailable
+	}
+	if c.pinnedID == 0 || c.identityVerified.Load() {
+		return nil
+	}
+	c.identityMu.Lock()
+	defer c.identityMu.Unlock()
+	if c.identityVerified.Load() {
+		return nil
+	}
+	_, err := c.GetMe(ctx)
+	return err
 }
 
 func (*Client) String() string   { return "telegramrich.Client([redacted])" }
@@ -131,6 +169,9 @@ func (c *Client) call(ctx context.Context, method string, body []byte, contentTy
 	if c == nil || c.http == nil {
 		return envelope{}, 0, ErrUnavailable
 	}
+	if method != "getMe" && c.pinnedID > 0 && !c.identityVerified.Load() {
+		return envelope{}, 0, ErrUnavailable
+	}
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.base+"/bot"+c.token+"/"+method, bytes.NewReader(body))
 	if err != nil {
 		return envelope{}, 0, ErrUnavailable
@@ -158,6 +199,13 @@ func (c *Client) GetMe(ctx context.Context) (User, error) {
 	var u User
 	if err != nil || status != 200 || !*e.OK || json.Unmarshal(e.Result, &u) != nil || !u.IsBot || u.ID <= 0 {
 		return u, ErrUnavailable
+	}
+	if c.pinnedID > 0 {
+		if u.ID != c.pinnedID || u.Username != c.pinnedName {
+			c.identityVerified.Store(false)
+			return User{}, ErrIdentityMismatch
+		}
+		c.identityVerified.Store(true)
 	}
 	return u, nil
 }
@@ -278,6 +326,15 @@ func (s *Sender) SendStored(ctx context.Context, m deliveryoutbox.Message) deliv
 		contentType = w.FormDataContentType()
 	}
 	if err != nil || s.Authorize(ctx, m) != nil {
+		return absent
+	}
+	identityPending := s.Client.pinnedID > 0 && !s.Client.identityVerified.Load()
+	if s.Client.ensureIdentity(ctx) != nil {
+		// No delivery request was released. Retry only this known pre-dispatch
+		// absence, within the existing outbox attempt bound; never retry UNKNOWN.
+		return deliveryoutbox.Outcome{Status: "absent", ErrorCode: "telegram_identity_unavailable", Retryable: true, RetryAfter: 5 * time.Second}
+	}
+	if identityPending && s.Authorize(ctx, m) != nil {
 		return absent
 	}
 	if part.Widget {
