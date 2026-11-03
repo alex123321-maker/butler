@@ -1,0 +1,35 @@
+name: Browser network boundary
+on:
+  pull_request:
+    paths: ['.github/workflows/browser-network.yml', 'scripts/dev/browser-network-tests.sh', 'internal/security/egress/**', 'apps/tool-browser/**', 'go.mod', 'go.sum']
+  push:
+    branches: [main]
+    paths: ['.github/workflows/browser-network.yml', 'scripts/dev/browser-network-tests.sh', 'internal/security/egress/**', 'apps/tool-browser/**', 'go.mod', 'go.sum']
+permissions:
+  contents: read
+jobs:
+  proxy-chromium:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      GOCACHE: ${{ github.workspace }}/.cache/go-build-linux
+      GOMODCACHE: ${{ github.workspace }}/.cache/go-mod
+      PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/.cache/ms-playwright
+      NPM_CONFIG_CACHE: ${{ github.workspace }}/.cache/npm
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with: {go-version: '1.27.2', cache: false}
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - run: npm ci --prefix apps/tool-browser --no-audit --no-fund
+      - run: cd apps/tool-browser && npx playwright install --with-deps chromium
+      - run: bash scripts/dev/browser-network-tests.sh
+      - name: Preserve network evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-network-evidence
+          path: .cache/browser-network-ci/*.jsonl
+          include-hidden-files: true
+          if-no-files-found: error

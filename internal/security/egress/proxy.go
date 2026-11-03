@@ -11,26 +11,35 @@ import (
 	"time"
 )
 
+// These are per-context safety ceilings, not model-selected permissions. They
+// include denied-destination attempts and do not reset when a window reopens.
+const (
+	maxProxyRequests      = 2048
+	maxProxyInflight      = 64
+	maxProxyResponseBytes = 20 * 1024 * 1024
+)
+
 // ScopedProxy is a private expiring proxy. NewScopedProxy fixes one origin;
 // NewBrowserProxy permits public origins under operator caps. Context byte
 // allowance survives later operations; expiry closes hijacked tunnels.
 type ScopedProxy struct {
-	server   *http.Server
-	listener net.Listener
-	policy   Policy
-	origin   *url.URL
-	expires  time.Time
-	counter  *Counter
-	inbound  *Counter
-	mu       sync.Mutex
-	tunnels  map[net.Conn]bool
-	requests map[uint64]context.CancelFunc
-	epoch    uint64
-	next     uint64
-	frozen   bool
-	closed   bool
-	timer    *time.Timer
-	window   *time.Timer
+	server    *http.Server
+	listener  net.Listener
+	policy    Policy
+	origin    *url.URL
+	expires   time.Time
+	counter   *Counter
+	inbound   *Counter
+	mu        sync.Mutex
+	tunnels   map[net.Conn]bool
+	requests  map[uint64]context.CancelFunc
+	epoch     uint64
+	next      uint64
+	frozen    bool
+	closed    bool
+	exhausted bool
+	timer     *time.Timer
+	window    *time.Timer
 }
 
 func NewScopedProxy(policy Policy, origin string, expires time.Time, limit int64) (*ScopedProxy, error) {
@@ -55,7 +64,7 @@ func newProxy(policy Policy, origin string, expires time.Time, limit int64, mult
 	if err != nil {
 		return nil, ErrDenied
 	}
-	proxy := &ScopedProxy{listener: listener, policy: policy, origin: parsed, expires: expires, counter: NewCounter(limit), inbound: NewCounter(20 * 1024 * 1024), tunnels: map[net.Conn]bool{}, requests: map[uint64]context.CancelFunc{}}
+	proxy := &ScopedProxy{listener: listener, policy: policy, origin: parsed, expires: expires, counter: NewCounter(limit), inbound: NewCounter(maxProxyResponseBytes), tunnels: map[net.Conn]bool{}, requests: map[uint64]context.CancelFunc{}}
 	if multiple {
 		proxy.origin = nil
 	}
@@ -95,6 +104,15 @@ func (p *ScopedProxy) freezeLocked() {
 	}
 }
 
+// Exhaustion is terminal for this context. An owner return or a later authorized
+// operation must not reopen traffic after a shared byte/attempt limit is spent.
+func (p *ScopedProxy) exhaust() {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	p.exhausted = true
+	p.freezeLocked()
+}
+
 // AllowUntil is a private runner capability for a separately authorized click.
 // It never resets byte allowance or session expiry. The reviewed page route
 // stays frozen until its live observation guards have passed.
@@ -104,7 +122,7 @@ func (p *ScopedProxy) AllowUntil(deadline time.Time) error {
 	if deadline.After(p.expires) {
 		deadline = p.expires
 	}
-	if p.closed || !deadline.After(time.Now()) {
+	if p.closed || p.exhausted || !deadline.After(time.Now()) {
 		return ErrDenied
 	}
 	if p.window != nil {
@@ -126,6 +144,14 @@ func (p *ScopedProxy) begin(ctx context.Context) (context.Context, uint64, func(
 	p.mu.Lock()
 	defer p.mu.Unlock()
 	if p.closed || p.frozen || p.Expired() {
+		return ctx, 0, func() {}, false
+	}
+	if p.next >= maxProxyRequests {
+		p.exhausted = true
+		p.freezeLocked()
+		return ctx, 0, func() {}, false
+	}
+	if len(p.requests) >= maxProxyInflight {
 		return ctx, 0, func() {}, false
 	}
 	ctx, cancel := context.WithDeadline(ctx, p.expires)
@@ -208,6 +234,9 @@ func (p *ScopedProxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	defer transport.CloseIdleConnections()
 	response, err := transport.RoundTrip(request)
 	if err != nil {
+		if err == ErrLimit {
+			p.exhaust()
+		}
 		http.Error(w, "outbound request denied", http.StatusForbidden)
 		return
 	}
@@ -218,7 +247,14 @@ func (p *ScopedProxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	w.WriteHeader(response.StatusCode)
-	_, _ = io.Copy(w, io.LimitReader(response.Body, 20*1024*1024))
+	var output io.Writer = &boundedWriter{writer: w, counter: p.inbound, onLimit: p.exhaust}
+	if strings.EqualFold(strings.TrimSpace(strings.Split(response.Header.Get("Content-Type"), ";")[0]), "text/event-stream") {
+		output = &flushingWriter{writer: output, controller: http.NewResponseController(w)}
+	}
+	if _, err := io.Copy(output, response.Body); err != nil {
+		// Never turn an oversized/truncated stream into a clean successful EOF.
+		panic(http.ErrAbortHandler)
+	}
 }
 
 func (p *ScopedProxy) connect(w http.ResponseWriter, r *http.Request, epoch uint64) {
@@ -264,12 +300,12 @@ func (p *ScopedProxy) connect(w http.ResponseWriter, r *http.Request, epoch uint
 	}
 	done := make(chan struct{})
 	go func() {
-		_, _ = io.Copy(&boundedWriter{writer: client, counter: p.inbound}, remote)
+		_, _ = io.Copy(&boundedWriter{writer: client, counter: p.inbound, onLimit: p.exhaust}, remote)
 		_ = client.Close()
 		_ = remote.Close()
 		close(done)
 	}()
-	_, _ = io.Copy(&boundedWriter{writer: remote, counter: p.counter}, buffer)
+	_, _ = io.Copy(&boundedWriter{writer: remote, counter: p.counter, onLimit: p.exhaust}, buffer)
 	_ = remote.Close()
 	_ = client.Close()
 	<-done
@@ -278,11 +314,28 @@ func (p *ScopedProxy) connect(w http.ResponseWriter, r *http.Request, epoch uint
 type boundedWriter struct {
 	writer  io.Writer
 	counter *Counter
+	onLimit func()
 }
 
 func (w *boundedWriter) Write(bytes []byte) (int, error) {
 	if err := w.counter.Take(int64(len(bytes))); err != nil {
+		if w.onLimit != nil {
+			w.onLimit()
+		}
 		return 0, err
 	}
 	return w.writer.Write(bytes)
+}
+
+type flushingWriter struct {
+	writer     io.Writer
+	controller *http.ResponseController
+}
+
+func (w *flushingWriter) Write(data []byte) (int, error) {
+	n, err := w.writer.Write(data)
+	if err != nil {
+		return n, err
+	}
+	return n, w.controller.Flush()
 }

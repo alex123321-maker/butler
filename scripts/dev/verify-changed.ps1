@@ -26,6 +26,13 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
+    "^(internal/security/egress/|scripts/dev/browser-network-tests[.]sh$|[.]github/workflows/browser-network[.]yml$|docs/architecture/browser-network-contract[.]md$)" {
+      [void]$specs.Add("docs/architecture/browser-network-contract.md")
+      [void]$specs.Add("docs/architecture/browser-session-contract.md")
+      [void]$specs.Add("docs/architecture/action-authorization-contract.md")
+      [void]$tests.Add("bash scripts/dev/browser-network-tests.sh: mandatory proxy race/vet and actual Chromium SSE/freeze/reconnect plus legacy guards, no skipped cases. This foundation does not enable WS/service workers or authorize POST queries; native model/delivery and inclusive timing remain separate acceptance in #165.")
+      continue
+    }
     "^(internal/externalauth/|internal/(credentials|actionauth|budget|config)/external_auth|apps/orchestrator/internal/(app/credential_external|api/browser_external_auth)|migrations/111_browser_external_auth|web/tests/e2e/credential-external|docs/architecture/browser-google-auth[.]md$)" {
       [void]$specs.Add("docs/architecture/browser-google-auth.md")
       [void]$specs.Add("docs/architecture/credential-management.md")

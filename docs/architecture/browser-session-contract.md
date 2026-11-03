@@ -1,5 +1,11 @@
 # Explicit browser execution sessions
 
+The [browser network contract](browser-network-contract.md) records the #165
+foundation: shared HTTP/CONNECT inbound allowance, finite admission ceilings,
+terminal exhaustion and live SSE preparation-freeze checks. POST read profiles,
+WebSockets and service workers remain pending; legacy read/prepare permissions
+are unchanged.
+
 The separate [managed-page contract](browser-pages-execution.md) implements
 same-origin, credential-free pages and a bounded exact-page live owner outcome
 review. Federated sign-in remains a [target proposal](browser-pages-proposal.md).

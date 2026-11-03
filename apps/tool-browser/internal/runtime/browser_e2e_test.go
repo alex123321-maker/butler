@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/butler/butler/internal/security/egress/egresstest"
+	"io"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -29,11 +30,22 @@ func TestBrowserSessionE2E(t *testing.T) {
 	}
 	var forms, posts, escapes, allowedReads atomic.Int64
 	var draftRequests, preparedSubmits atomic.Int64
+	var streamRequests atomic.Int64
+	streamCancelled := make(chan struct{}, 8)
 	var preparedValue atomic.Value
 	var received atomic.Value
 	var privateOrigin string
 	pageServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
+		case "/stream-page":
+			_, _ = fmt.Fprint(w, `<html><body><input id="draft"><p id="status">Waiting</p><script>const events=new EventSource('/events');events.onmessage=()=>{const p=document.getElementById('status');p.id='stream-live';p.textContent='Live update received'}</script></body></html>`)
+		case "/events":
+			streamRequests.Add(1)
+			w.Header().Set("Content-Type", "text/event-stream")
+			_, _ = io.WriteString(w, "retry: 100\ndata: update\n\n")
+			w.(http.Flusher).Flush()
+			<-r.Context().Done()
+			streamCancelled <- struct{}{}
 		case "/draft":
 			_, _ = fmt.Fprint(w, `<html><body><form action="/prepared-submit" method="post"><input id="a" name="a"><input id="b" name="b"><input id="password" type="password"><button id="submit">Send</button></form><span id="reflection"></span><script>
 const release=()=>{fetch('/draft-release?value='+encodeURIComponent(document.getElementById('a').value)).catch(()=>{});fetch('/draft-release',{method:'POST',body:document.getElementById('a').value}).catch(()=>{})};
@@ -187,6 +199,32 @@ new WebSocket('ws://external.test/escape');
 		refused := executeTest(t, server, follow)
 		if refused.GetStatus() != "failed" || !strings.Contains(refused.GetError().GetDetailsJson(), "get_form_denied") || draftRequests.Load() != before {
 			t.Fatal("public GET reader thawed the frozen observation")
+		}
+		invoke("browser.close", map[string]any{"browser_session_id": obs.SessionID})
+	})
+	t.Run("live SSE stops at preparation freeze and automatic reconnect cannot thaw", func(t *testing.T) {
+		before := streamRequests.Load()
+		obs := open("/stream-page")
+		args := actionArgs(obs)
+		args["selector"], args["timeout"] = "#stream-live", 3000
+		obs = invoke("browser.wait_for", args)
+		if !strings.Contains(obs.Text, "Live update received") || streamRequests.Load() != before+1 {
+			t.Fatal("live event never reached actual Chromium")
+		}
+		args = actionArgs(obs)
+		args["selector"], args["value"] = "#draft", "local draft"
+		obs = invoke("browser.prepare_fill", args)
+		select {
+		case <-streamCancelled:
+		case <-time.After(time.Second):
+			t.Fatal("recipient stream survived Chromium preparation freeze")
+		}
+		// EventSource's fixture retry bound is 100 ms; the actual independent
+		// recipient must not see reconnects after the freeze acknowledgement.
+		time.Sleep(400 * time.Millisecond)
+		obs = invoke("browser.snapshot", map[string]any{"browser_session_id": obs.SessionID})
+		if obs.NetworkState != "frozen" || streamRequests.Load() != before+1 {
+			t.Fatal("automatic SSE reconnect crossed freeze")
 		}
 		invoke("browser.close", map[string]any{"browser_session_id": obs.SessionID})
 	})

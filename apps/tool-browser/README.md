@@ -1,5 +1,15 @@
 # Tool Browser
 
+Issue #165's first [network foundation](../../docs/architecture/browser-network-contract.md)
+adds 64 concurrent proxy operations, 2048 lifetime admissions and a shared
+20 MiB inbound allowance for HTTP response bodies and raw CONNECT bytes.
+Byte/attempt exhaustion cannot be reset by thaw. HTTP EventSource responses
+flush without buffering the whole stream; actual Chromium checks that local
+preparation closes the recipient stream and blocks automatic reconnect.
+`scripts/dev/browser-network-tests.sh` requires proxy race/vet and Chromium
+regressions without skips. This does not enable POST read profiles, WS or service
+workers; native SPA/authority acceptance remains open.
+
 The separate revision1 `browser.sso_login` protocol handles one native-form
 RP/IdP popup flow under exact protected consent and Broker dispatch caps. It
 requires independent Go authenticated/anonymous RP verification. The required
