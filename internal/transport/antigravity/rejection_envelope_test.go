@@ -8,6 +8,8 @@ import (
 func TestBadRequestEnvelopeShapesStayPrivate(t *testing.T) {
 	for _, tc := range []struct{ body, want string }{
 		{"[{\"error\":{\"status\":\"FAILED_PRECONDITION\",\"message\":\"PRIVATE\"}}]", "upstream_failed_precondition"},
+		{`{"error":{"status":"FAILED_PRECONDITION","message":"User location is not supported for the API use PRIVATE"}}`, "upstream_location_policy"},
+		{`[{"error":{"status":"FAILED_PRECONDITION","message":"This service is not available in your country PRIVATE_ACCOUNT"}}]`, "upstream_location_policy"},
 		{"[{\"error\":{\"status\":\"INVALID_ARGUMENT\",\"message\":\"PRIVATE invalid model PRIVATE_PROJECT\"}}]", "upstream_model_rejected"},
 		{"data: [{\"error\":{\"status\":\"INVALID_ARGUMENT\",\"message\":\"PRIVATE thinkingBudget\"}}]\n\n", "upstream_thinking_rejected"},
 		{"<html>PRIVATE</html>", "upstream_bad_request_non_json"},
