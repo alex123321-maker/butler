@@ -198,6 +198,9 @@ func (c *liveClient) capture(ctx context.Context, dir, session string, step Step
 		if err != nil {
 			row.Issue = "missing_or_incomplete_model_trace"
 			incomplete = true
+		} else if !c.candidate.matchesProfile(end) {
+			row.Issue = "native_profile_unverified"
+			systemIssue = errors.New("native_profile_unverified")
 		} else {
 			d := end.ElapsedUS
 			row.DurationUS = &d

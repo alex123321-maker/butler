@@ -35,13 +35,14 @@ func init() {
 }
 
 type Config struct {
-	APIKey        string
-	Model         string
-	BaseURL       string
-	RealtimeURL   string
-	TransportMode string
-	Timeout       time.Duration
-	Logger        *slog.Logger
+	APIKey          string
+	Model           string
+	BaseURL         string
+	RealtimeURL     string
+	TransportMode   string
+	ReasoningEffort string
+	Timeout         time.Duration
+	Logger          *slog.Logger
 }
 
 type Provider struct {
@@ -59,6 +60,19 @@ type Provider struct {
 func NewProvider(cfg Config, client *http.Client) (*Provider, error) {
 	if strings.TrimSpace(cfg.Model) == "" {
 		cfg.Model = "gpt-4o-mini"
+	}
+	if cfg.ReasoningEffort != "" {
+		switch cfg.ReasoningEffort {
+		case "none", "low", "medium", "high", "xhigh", "max":
+		default:
+			return nil, fmt.Errorf("invalid OpenAI reasoning effort")
+		}
+		if cfg.Model != lunaModel {
+			return nil, fmt.Errorf("explicit OpenAI reasoning effort requires %s", lunaModel)
+		}
+	}
+	if cfg.Model == lunaModel {
+		cfg.TransportMode = TransportModeSSEOnly
 	}
 	if strings.TrimSpace(cfg.BaseURL) == "" {
 		cfg.BaseURL = "https://api.openai.com/v1"
@@ -217,6 +231,7 @@ func (p *Provider) executeStreamingRequest(ctx context.Context, runID, method, u
 	httpReq.Header.Set("Content-Type", "application/json")
 
 	p.log.Info("opening openai stream", slog.String("run_id", runID), slog.String("method", method), slog.String("path", path))
+	transport.ObserveProviderStage(ctx, transport.ProviderStageHTTP)
 	resp, err := p.httpClient.Do(httpReq)
 	if err != nil {
 		p.log.Error("openai stream request failed", slog.String("run_id", runID), slog.String("path", path), slog.String("error", transport.NormalizeError(err, providerName).Error()))
@@ -229,6 +244,7 @@ func (p *Provider) executeStreamingRequest(ctx context.Context, runID, method, u
 	}
 	p.log.Info("openai stream opened", slog.String("run_id", runID), slog.String("path", path), slog.Int("status_code", resp.StatusCode))
 
+	transport.ObserveProviderStage(ctx, transport.ProviderStageStream)
 	stream := make(chan transport.TransportEvent, 32)
 	go p.streamResponse(ctx, runID, path, resp.Body, stream)
 	return stream, nil
@@ -239,7 +255,7 @@ func (p *Provider) streamResponse(ctx context.Context, runID, path string, body 
 	defer body.Close()
 
 	decoder := newSSEDecoder(body)
-	state := streamState{}
+	state := streamState{responses: true}
 	eventsEmitted := 0
 	for {
 		message, err := decoder.Next(ctx)
@@ -294,6 +310,25 @@ func (p *Provider) normalizeMessage(runID string, message sseMessage, state *str
 }
 
 func (p *Provider) normalizePayload(runID, eventType string, payload map[string]any, state *streamState) ([]transport.TransportEvent, bool, error) {
+	if state.responses {
+		switch eventType {
+		case "response.queued", "response.output_item.added", "response.content_part.added", "response.content_part.done", "response.output_text.done", "response.function_call_arguments.delta", "response.reasoning_summary_part.added", "response.reasoning_summary_part.done", "response.reasoning_summary_text.delta", "response.reasoning_summary_text.done":
+			// Intermediate framing; text deltas and completed calls are handled below.
+			return nil, false, nil
+		case "response.function_call_arguments.done", "response.output_item.done":
+			item := payload
+			if eventType == "response.output_item.done" {
+				item = mapValue(payload["item"])
+				if stringValue(item["type"]) != "function_call" {
+					return nil, false, nil
+				}
+			}
+			state.collectCall(item, intValue(payload["sequence_number"]))
+			return nil, false, nil
+		case "response.completed", "response.incomplete":
+			return p.finishResponses(runID, payload, state)
+		}
+	}
 	switch eventType {
 	case "session.created", "session.updated":
 		ref := providerSessionFromPayload(payload)
@@ -452,7 +487,7 @@ func (p *Provider) startRunBody(req transport.StartRunRequest) ([]byte, error) {
 			payload[key] = value
 		}
 	}
-	return json.Marshal(payload)
+	return p.responsesBody(payload)
 }
 
 func (p *Provider) continueRunBody(req transport.ContinueRunRequest) ([]byte, error) {
@@ -484,7 +519,7 @@ func (p *Provider) continueRunBody(req transport.ContinueRunRequest) ([]byte, er
 			payload[key] = value
 		}
 	}
-	return json.Marshal(payload)
+	return p.responsesBody(payload)
 }
 
 func (p *Provider) submitToolResultBody(req transport.SubmitToolResultRequest) ([]byte, error) {
@@ -494,7 +529,7 @@ func (p *Provider) submitToolResultBody(req transport.SubmitToolResultRequest) (
 	input := []map[string]any{{
 		"type":    "function_call_output",
 		"call_id": req.ToolCallRef,
-		"output":  json.RawMessage(req.ToolResultJSON),
+		"output":  req.ToolResultJSON,
 	}}
 	payload := map[string]any{
 		"model":  p.config.Model,
@@ -515,7 +550,7 @@ func (p *Provider) submitToolResultBody(req transport.SubmitToolResultRequest) (
 			payload[key] = value
 		}
 	}
-	return json.Marshal(payload)
+	return p.responsesBody(payload)
 }
 
 func (p *Provider) applyHeaders(req *http.Request) {
@@ -583,6 +618,8 @@ func (d *sseDecoder) Next(ctx context.Context) (sseMessage, error) {
 }
 
 type streamState struct {
+	responses       bool
+	pendingCalls    []transport.ToolCallRequest
 	toolRequested   bool
 	providerSession *transport.ProviderSessionRef
 	finalText       strings.Builder
@@ -638,11 +675,13 @@ func contentTypeForRole(role string) string {
 }
 
 func encodeTools(tools []transport.ToolDefinition) []map[string]any {
+	aliases := wireToolNames(tools)
 	encoded := make([]map[string]any, 0, len(tools))
 	for _, tool := range tools {
 		entry := map[string]any{
 			"type":        "function",
-			"name":        tool.Name,
+			"name":        aliases[tool.Name],
+			"strict":      false,
 			"description": tool.Description,
 		}
 		if strings.TrimSpace(tool.SchemaJSON) != "" {
@@ -691,9 +730,11 @@ func usageFromMap(payload map[string]any) *transport.Usage {
 		return nil
 	}
 	return &transport.Usage{
-		InputTokens:  intValue(payload["input_tokens"]),
-		OutputTokens: intValue(payload["output_tokens"]),
-		TotalTokens:  intValue(payload["total_tokens"]),
+		InputTokens:           intValue(payload["input_tokens"]),
+		OutputTokens:          intValue(payload["output_tokens"]),
+		TotalTokens:           intValue(payload["total_tokens"]),
+		CachedInputTokens:     detailCount(payload, "input_tokens_details", "cached_tokens"),
+		ReasoningOutputTokens: detailCount(payload, "output_tokens_details", "reasoning_tokens"),
 	}
 }
 

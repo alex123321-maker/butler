@@ -163,6 +163,7 @@ func newApp(ctx context.Context, telegramOptions *TelegramCommunicationOptions) 
 		OpenAIBaseURL:                  cfg.OpenAIBaseURL,
 		OpenAIRealtimeURL:              cfg.OpenAIRealtimeURL,
 		OpenAITransportMode:            cfg.OpenAITransportMode,
+		OpenAIReasoningEffort:          cfg.OpenAIReasoningEffort,
 		OpenAICodexModel:               cfg.OpenAICodexModel,
 		OpenAICodexBaseURL:             cfg.OpenAICodexBaseURL,
 		GitHubCopilotModel:             cfg.GitHubCopilotModel,

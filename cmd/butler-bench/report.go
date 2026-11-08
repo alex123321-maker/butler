@@ -22,7 +22,7 @@ func readRun(dir string) (Run, []Outcome, error) {
 		return run, nil, err
 	}
 	p := run.Plan
-	if p.Version != version || p.Protocol != protocolHash() || run.PlanHash != digest(p) || !shaRE.MatchString(p.SetupHash) || !commitRE.MatchString(p.Commit) || !nonceRE.MatchString(run.ID) || run.Candidate.Provider == "" || run.Candidate.Model == "" {
+	if p.Version != version || p.Protocol != protocolHash() || run.PlanHash != digest(p) || !shaRE.MatchString(p.SetupHash) || !commitRE.MatchString(p.Commit) || !nonceRE.MatchString(run.ID) || run.Candidate.Provider == "" || run.Candidate.Model == "" || !run.Candidate.validEffort() {
 		return run, nil, errors.New("invalid run identity or incompatible benchmark version")
 	}
 	baseline, _, err := makePlan(run.Setup, p.Seed, p.Group, p.Cases, p.Repetitions, p.Timeout)
@@ -71,6 +71,9 @@ func readRun(dir string) (Run, []Outcome, error) {
 			var retained Turn
 			if err := load(turnFile(dir, i, k), &retained); err != nil || digest(retained) != digest(turn) {
 				return run, nil, errors.New("durable turn and result differ")
+			}
+			if err := verifyProfileEvidence(filepath.Join(dir, turn.Event), run.Candidate, turn); err != nil {
+				return run, nil, err
 			}
 			if err := verifyFiles(filepath.Join(dir, turn.Event), turn.EvidenceSHA); err != nil {
 				return run, nil, err

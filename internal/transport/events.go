@@ -36,6 +36,9 @@ type Usage struct {
 	TotalTokens  int
 	// Optional separately observed reasoning count. Nil is unavailable, not zero.
 	ThinkingTokens *int `json:",omitempty"`
+	// Subsets of the corresponding input/output counts, never additive.
+	CachedInputTokens     *int `json:",omitempty"`
+	ReasoningOutputTokens *int `json:",omitempty"`
 }
 
 // Validate accepts nonnegative observed counts without overflowing a sum. A
@@ -49,6 +52,10 @@ func (u Usage) Validate() error {
 	}
 	if u.TotalTokens > 0 && u.TotalTokens < u.InputTokens+u.OutputTokens {
 		return fmt.Errorf("invalid observed token total")
+	}
+	if u.CachedInputTokens != nil && (*u.CachedInputTokens < 0 || *u.CachedInputTokens > u.InputTokens) ||
+		u.ReasoningOutputTokens != nil && (*u.ReasoningOutputTokens < 0 || *u.ReasoningOutputTokens > u.OutputTokens) {
+		return fmt.Errorf("invalid observed token detail")
 	}
 	if u.ThinkingTokens != nil && (*u.ThinkingTokens < 0 || *u.ThinkingTokens > u.TotalTokens-u.InputTokens-u.OutputTokens) {
 		return fmt.Errorf("invalid observed thinking usage")
@@ -95,7 +102,8 @@ type TransportEvent struct {
 	Usage *Usage
 	// ProviderModelVersion is optional observed version metadata, not a claim
 	// about proprietary weight bytes or authority to change the selected model.
-	ProviderModelVersion *string
+	ProviderModelVersion    *string
+	ProviderReasoningEffort string
 }
 
 func NewEvent(runID string, eventType EventType, providerName string) TransportEvent {

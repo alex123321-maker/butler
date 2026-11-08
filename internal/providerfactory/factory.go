@@ -28,6 +28,7 @@ type BuildConfig struct {
 	OpenAIBaseURL                  string
 	OpenAIRealtimeURL              string
 	OpenAITransportMode            string
+	OpenAIReasoningEffort          string
 	OpenAICodexModel               string
 	OpenAICodexBaseURL             string
 	GitHubCopilotModel             string
@@ -70,13 +71,14 @@ func (f *Factory) Build(_ context.Context, cfg BuildConfig) (Result, error) {
 		return Result{Provider: instance, ProviderName: provider, ModelName: model}, nil
 	case modelprovider.ProviderOpenAI:
 		instance, err := transport.NewProvider(provider, openai.Config{
-			APIKey:        cfg.OpenAIAPIKey,
-			Model:         cfg.OpenAIModel,
-			BaseURL:       cfg.OpenAIBaseURL,
-			RealtimeURL:   cfg.OpenAIRealtimeURL,
-			TransportMode: cfg.OpenAITransportMode,
-			Timeout:       cfg.Timeout,
-			Logger:        logger.WithComponent(f.log, provider),
+			APIKey:          cfg.OpenAIAPIKey,
+			Model:           cfg.OpenAIModel,
+			BaseURL:         cfg.OpenAIBaseURL,
+			RealtimeURL:     cfg.OpenAIRealtimeURL,
+			TransportMode:   cfg.OpenAITransportMode,
+			ReasoningEffort: cfg.OpenAIReasoningEffort,
+			Timeout:         cfg.Timeout,
+			Logger:          logger.WithComponent(f.log, provider),
 		})
 		if err != nil {
 			return Result{}, err
