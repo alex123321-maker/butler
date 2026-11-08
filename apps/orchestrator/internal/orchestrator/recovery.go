@@ -10,6 +10,7 @@ import (
 	approvals "github.com/butler/butler/apps/orchestrator/internal/approval"
 	"github.com/butler/butler/apps/orchestrator/internal/session"
 	"github.com/butler/butler/internal/actionauth"
+	"github.com/butler/butler/internal/benchtrace"
 	commonv1 "github.com/butler/butler/internal/gen/common/v1"
 	sessionv1 "github.com/butler/butler/internal/gen/session/v1"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
@@ -52,6 +53,9 @@ func (s *Service) Resume(ctx context.Context, runID string, event ingress.InputE
 	}
 	if current.GetSessionKey() != event.SessionKey || s.config.Checkpoints == nil {
 		return nil, fmt.Errorf("recovery identity or checkpoint unavailable")
+	}
+	if s.config.BenchmarkTraceDir != "" && current.GetInputEventId() == event.EventID {
+		ctx = benchtrace.Bind(ctx, s.config.BenchmarkTraceDir, event.Source, event.SessionKey, event.EventID, runID)
 	}
 	stage, payload, err := s.config.Checkpoints.LoadCheckpoint(ctx, runID)
 	if err != nil {

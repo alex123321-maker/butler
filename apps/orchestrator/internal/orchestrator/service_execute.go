@@ -13,6 +13,7 @@ import (
 	"github.com/butler/butler/apps/orchestrator/internal/observability"
 	"github.com/butler/butler/apps/orchestrator/internal/session"
 	"github.com/butler/butler/apps/orchestrator/internal/task"
+	"github.com/butler/butler/internal/benchtrace"
 	"github.com/butler/butler/internal/budget"
 	commonv1 "github.com/butler/butler/internal/gen/common/v1"
 	sessionv1 "github.com/butler/butler/internal/gen/session/v1"
@@ -69,6 +70,9 @@ func (s *Service) Execute(ctx context.Context, event ingress.InputEvent) (*Execu
 
 func (s *Service) executeRun(ctx context.Context, runLog *slog.Logger, runRecord *sessionv1.RunRecord, event ingress.InputEvent, prepared preparedRun) (result *ExecutionResult, returnedErr error) {
 	current := runRecord
+	if s.config.BenchmarkTraceDir != "" && current.GetInputEventId() == event.EventID && current.GetSessionKey() == event.SessionKey {
+		ctx = benchtrace.Bind(ctx, s.config.BenchmarkTraceDir, event.Source, event.SessionKey, event.EventID, current.GetRunId())
+	}
 
 	var next *sessionv1.RunRecord
 	var err error

@@ -3,6 +3,7 @@ package orchestrator
 import (
 	"context"
 
+	"github.com/butler/butler/internal/benchtrace"
 	"github.com/butler/butler/internal/delegation"
 	"github.com/butler/butler/internal/ingress"
 )
@@ -21,6 +22,9 @@ type DelegatedInputVerifier interface {
 }
 
 func (s *Service) checkpoint(ctx context.Context, runID, stage string, payload any) error {
+	if s.config.BenchmarkTraceDir != "" {
+		defer benchtrace.Measure(ctx, "checkpoint/"+stage)()
+	}
 	if s.config.Checkpoints == nil {
 		return nil
 	}

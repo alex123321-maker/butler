@@ -1,5 +1,13 @@
 # Observation-only contract evaluation
 
+The [Butler benchmark](../../cmd/butler-bench/README.md) freezes synthetic cases,
+repeat order, evaluator revision and lab configuration before submitting Web
+inputs. Its read-only observer joins accepted inputs, model operations, tools,
+effects, results and delivery. A private operator mount enables logical model
+and system timings for individually enrolled Web event/session identities.
+Evidence bundles retain UTC and monotonic measurements, model-visible input
+and output, nullable usage and artifacts for local verification and rescoring.
+
 ## Memory outcome evaluation (issue78)
 
 Current semantic diagnostics follow the separately versioned
