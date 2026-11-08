@@ -60,15 +60,16 @@ type TelegramCommunicationOptions struct {
 }
 
 type telegramCommunication struct {
-	toolProbe func(context.Context) (map[string]bool, error)
-	store     *communication.Store
-	client    *telegramrich.Client
-	binding   telegramrich.OwnerBinding
-	policy    telegramExportPolicy
-	controls  *task.Controller
-	web       *webCommunication
-	draining  bool
-	widgets   bool
+	toolProbe       func(context.Context) (map[string]bool, error)
+	store           *communication.Store
+	client          *telegramrich.Client
+	binding         telegramrich.OwnerBinding
+	policy          telegramExportPolicy
+	controls        *task.Controller
+	web             *webCommunication
+	draining        bool
+	widgets         bool
+	identityPending bool
 }
 
 type telegramExportPolicy struct {
@@ -151,8 +152,23 @@ func newTelegramCommunication(ctx context.Context, pool *pgxpool.Pool, sources *
 	if err != nil {
 		return nil, err
 	}
+	if o.expectedBotID > 0 {
+		if err = client.RequireIdentity(o.ExpectedBot, o.expectedBotID); err != nil {
+			return nil, err
+		}
+	}
 	me, err := client.GetMe(ctx)
-	if err != nil || me.Username != o.ExpectedBot || o.expectedBotID != 0 && me.ID != o.expectedBotID {
+	identityPending := err != nil
+	botID := me.ID
+	if identityPending {
+		// Only a previously verified, exact production owner profile may restore
+		// Web availability. This is metadata, not a fabricated GetMe response.
+		// The client still blocks all Telegram operations until real verification.
+		if errors.Is(err, telegramrich.ErrIdentityMismatch) || !deferredTelegramIdentityAllowed(ctx, pool, o) {
+			return nil, telegram.ErrExplicitUnsupported
+		}
+		botID = o.expectedBotID
+	} else if me.Username != o.ExpectedBot || o.expectedBotID != 0 && me.ID != o.expectedBotID {
 		return nil, telegram.ErrExplicitUnsupported
 	}
 	if o.BindingVersion == 0 {
@@ -195,10 +211,10 @@ func newTelegramCommunication(ctx context.Context, pool *pgxpool.Pool, sources *
 	if err != nil {
 		return nil, err
 	}
-	if err = pinTelegramBotAt(ctx, pool, b, me.ID, o.initialUpdateID); err != nil {
+	if err = pinTelegramBotAt(ctx, pool, b, botID, o.initialUpdateID); err != nil {
 		return nil, err
 	}
-	c := &telegramCommunication{store: core, client: client, binding: telegramrich.OwnerBinding{OwnerID: o.OwnerID, BindingID: b.ID, Version: b.Version, ChatID: o.ChatID, UserID: o.ChatID, BotID: me.ID}, policy: policy, draining: o.DrainOnly, widgets: o.Widgets}
+	c := &telegramCommunication{store: core, client: client, binding: telegramrich.OwnerBinding{OwnerID: o.OwnerID, BindingID: b.ID, Version: b.Version, ChatID: o.ChatID, UserID: o.ChatID, BotID: botID}, policy: policy, draining: o.DrainOnly, widgets: o.Widgets, identityPending: identityPending}
 	c.installInputHooks()
 	if err = c.installWeb(ctx, o, guard); err != nil {
 		return nil, err
@@ -216,6 +232,15 @@ func newTelegramCommunication(ctx context.Context, pool *pgxpool.Pool, sources *
 		return nil, err
 	}
 	return c, nil
+}
+
+func deferredTelegramIdentityAllowed(ctx context.Context, pool *pgxpool.Pool, o TelegramCommunicationOptions) bool {
+	if pool == nil || o.ownerDatabase == "" || o.ownerDatabase != pool.Config().ConnConfig.Database || o.expectedBotID <= 0 || o.WebBindingID == "" {
+		return false
+	}
+	var allowed bool
+	err := pool.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM communication_bindings t JOIN communication_telegram_cursors c ON c.binding_id=t.binding_id JOIN communication_bindings w ON w.binding_id=$5 WHERE t.binding_id=$1 AND t.version=$2 AND t.owner_id=$3 AND t.channel='telegram' AND t.recipient=$4 AND t.enabled AND t.verified AND c.bot_id=$7 AND w.version=$6 AND w.owner_id=t.owner_id AND w.channel='web' AND w.enabled AND w.verified)`, o.BindingID, o.BindingVersion, o.OwnerID, "telegram:"+strconv.FormatInt(o.ChatID, 10), o.WebBindingID, o.WebBindingVersion, o.expectedBotID).Scan(&allowed)
+	return err == nil && allowed
 }
 
 // Pin the verified numeric bot before admission/sending. A recreated username

@@ -47,7 +47,14 @@ func (c *telegramCommunication) CommunicationReport(ctx context.Context) (commun
 	if c == nil || c.store == nil {
 		return communication.DiagnosticReport{}, communication.ErrDenied
 	}
-	return c.store.Diagnostics(ctx, c.diagnosticProfile())
+	out, err := c.store.Diagnostics(ctx, c.diagnosticProfile())
+	if err == nil && c.client.IdentityVerificationPending() {
+		out.Checks = append(out.Checks, communication.DiagnosticCheck{Name: "telegram_identity", Status: "degraded", Reason: "identity_verification_pending"})
+		if out.Status == "healthy" {
+			out.Status = "degraded"
+		}
+	}
+	return out, err
 }
 
 func (c *telegramCommunication) doctorReporter() api.CommunicationDoctorReporter {

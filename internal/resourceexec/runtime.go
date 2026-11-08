@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/butler/butler/internal/actionauth"
+	"github.com/butler/butler/internal/browserspa"
 	commonv1 "github.com/butler/butler/internal/gen/common/v1"
 	runtimev1 "github.com/butler/butler/internal/gen/runtime/v1"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
@@ -81,6 +82,20 @@ func (r *Runtime) Execute(ctx context.Context, req *runtimev1.ExecuteRequest) (*
 	l.fence = admitted.Fence
 	runCtx, cancel := context.WithDeadline(context.WithValue(ctx, runtimeSpecKey{}, admitted), admitted.Deadline)
 	defer cancel()
+	if request.ToolName == "browser.read_spa" {
+		live, ok := r.authority.(LiveAuthority)
+		if !ok {
+			return fail()
+		}
+		check := func(ctx context.Context, target string) error {
+			current, err := live.Check(ctx, request, target)
+			if err != nil || current.Lane != admitted.Lane || current.Fence != admitted.Fence || current.DispatchID != admitted.DispatchID || current.Deadline.After(admitted.Deadline) || !current.Deadline.After(time.Now()) {
+				return ErrDenied
+			}
+			return nil
+		}
+		runCtx = context.WithValue(runCtx, liveCheckKey{}, check)
+	}
 	response, runErr := r.backend.Execute(runCtx, req)
 	result := response.GetResult()
 	completed := runErr == nil && result != nil && result.GetStatus() == "completed" && result.GetError() == nil && result.GetRunId() == request.RunID && result.GetToolCallId() == request.ToolCallID && result.GetToolName() == request.ToolName && runCtx.Err() == nil
@@ -106,7 +121,21 @@ func (r *Runtime) Execute(ctx context.Context, req *runtimev1.ExecuteRequest) (*
 	finishCtx, cancelFinish := context.WithTimeout(context.WithoutCancel(ctx), 3*time.Second)
 	defer cancelFinish()
 	if e = r.authority.Finish(finishCtx, receipt); e != nil || !(completed || rejected) {
-		return fail()
+		failure, _ := fail()
+		if request.ToolName == browserspa.Tool {
+			code := "spa_query_failed"
+			if e != nil {
+				code = "spa_finish_unknown"
+			} else {
+				var detail map[string]string
+				if json.Unmarshal([]byte(result.GetError().GetDetailsJson()), &detail) == nil && len(detail) == 1 && browserspa.ValidDiagnostic(detail["error_type"]) {
+					code = detail["error_type"]
+				}
+			}
+			raw, _ := json.Marshal(map[string]string{"error_type": code})
+			failure.Result.Error.DetailsJson = string(raw)
+		}
+		return failure, nil
 	}
 	if confirmed, ok := r.backend.(interface {
 		ConfirmRuntime(context.Context, RuntimeSpec) error

@@ -79,7 +79,7 @@ func browserSelection(p Profile, call *toolbrokerv1.ToolCall, contract *toolbrok
 	}
 	identity := args.SessionID
 	switch call.GetToolName() {
-	case "browser.open", "browser.read", "browser.open_pages":
+	case "browser.open", "browser.read", "browser.open_pages", "browser.read_spa":
 		if identity != "" {
 			return selection{}, ErrDenied
 		}

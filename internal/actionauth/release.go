@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/butler/butler/internal/browserspa"
 	"github.com/butler/butler/internal/browsersso"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 	"github.com/butler/butler/internal/security/egress"
@@ -28,6 +29,12 @@ func NetworkReleaseRequired(call *toolbrokerv1.ToolCall, contract *toolbrokerv1.
 		resources = append(resources, resource)
 	}
 	switch call.GetToolName() {
+	case browserspa.Tool:
+		a, e := browserspa.Parse(call.ArgsJson)
+		if e != nil {
+			return false, e
+		}
+		resources = append(resources, a.URL)
 	case browsersso.InspectTool:
 		a, e := browsersso.ParseInspection(call.ArgsJson)
 		if e != nil {

@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/butler/butler/internal/actionauth"
+	"github.com/butler/butler/internal/browserspa"
 	"github.com/butler/butler/internal/credentials"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 	"github.com/butler/butler/internal/resourceexec"
@@ -21,9 +22,16 @@ type ResourceAdmissions struct {
 	ServerBrowser bool
 	Workspace     *workspaceexec.DispatchStore
 	Browser       *GuardedTabAdmission
+	SPA           *GuardedTabAdmission
 }
 
 func (a ResourceAdmissions) PrepareContext(ctx context.Context, call *toolbrokerv1.ToolCall, c *toolbrokerv1.ToolContract, g actionauth.Grant) (context.Context, error) {
+	if call.GetToolName() == browserspa.Tool {
+		if a.SPA == nil {
+			return ctx, resourceexec.ErrDenied
+		}
+		return a.SPA.PrepareContext(ctx, call, c, g)
+	}
 	if a.ServerBrowser && strings.HasPrefix(call.GetToolName(), "browser.") {
 		return ctx, nil
 	}
@@ -42,6 +50,12 @@ func (a ResourceAdmissions) PrepareContext(ctx context.Context, call *toolbroker
 	return ctx, nil
 }
 func (a ResourceAdmissions) CheckAdmissionTx(ctx context.Context, tx pgx.Tx, g actionauth.Grant) error {
+	if g.Binding.ToolName == browserspa.Tool {
+		if a.SPA == nil {
+			return resourceexec.ErrDenied
+		}
+		return a.SPA.CheckAdmissionTx(ctx, tx, g)
+	}
 	if a.ServerBrowser && strings.HasPrefix(g.Binding.ToolName, "browser.") {
 		return nil
 	}
@@ -60,6 +74,12 @@ func (a ResourceAdmissions) CheckAdmissionTx(ctx context.Context, tx pgx.Tx, g a
 	return nil
 }
 func (a ResourceAdmissions) ClaimActionTx(ctx context.Context, tx pgx.Tx, g actionauth.Grant, effect string) error {
+	if g.Binding.ToolName == browserspa.Tool {
+		if a.SPA == nil {
+			return resourceexec.ErrDenied
+		}
+		return a.SPA.ClaimActionTx(ctx, tx, g, effect)
+	}
 	if a.ServerBrowser && strings.HasPrefix(g.Binding.ToolName, "browser.") {
 		return nil
 	}

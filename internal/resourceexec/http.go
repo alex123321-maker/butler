@@ -16,6 +16,7 @@ type wireRequest struct {
 	Operation string         `json:"operation"`
 	Request   RuntimeRequest `json:"request"`
 	Receipt   *Receipt       `json:"receipt,omitempty"`
+	Target    string         `json:"target,omitempty"`
 }
 type wireResponse struct {
 	Spec *RuntimeSpec `json:"spec,omitempty"`
@@ -44,7 +45,7 @@ func NewHTTPHandler(authority RuntimeAuthority, token string) (http.Handler, err
 		var e error
 		switch request.Operation {
 		case "inspect":
-			if request.Receipt != nil {
+			if request.Receipt != nil || request.Target != "" {
 				e = ErrDenied
 				break
 			}
@@ -52,15 +53,24 @@ func NewHTTPHandler(authority RuntimeAuthority, token string) (http.Handler, err
 			spec, e = authority.Inspect(r.Context(), request.Request)
 			response.Spec = &spec
 		case "begin":
-			if request.Receipt != nil {
+			if request.Receipt != nil || request.Target != "" {
 				e = ErrDenied
 				break
 			}
 			var spec RuntimeSpec
 			spec, e = authority.Begin(r.Context(), request.Request)
 			response.Spec = &spec
+		case "check":
+			live, ok := authority.(LiveAuthority)
+			if !ok || request.Receipt != nil {
+				e = ErrDenied
+				break
+			}
+			var spec RuntimeSpec
+			spec, e = live.Check(r.Context(), request.Request, request.Target)
+			response.Spec = &spec
 		case "finish":
-			if request.Receipt == nil || request.Request != (RuntimeRequest{}) {
+			if request.Receipt == nil || request.Request != (RuntimeRequest{}) || request.Target != "" {
 				e = ErrDenied
 				break
 			}
@@ -144,4 +154,12 @@ func (c *HTTPAuthority) Begin(ctx context.Context, r RuntimeRequest) (RuntimeSpe
 func (c *HTTPAuthority) Finish(ctx context.Context, r Receipt) error {
 	_, e := c.read(ctx, wireRequest{Operation: "finish", Receipt: &r})
 	return e
+}
+
+func (c *HTTPAuthority) Check(ctx context.Context, r RuntimeRequest, target string) (RuntimeSpec, error) {
+	v, e := c.read(ctx, wireRequest{Operation: "check", Request: r, Target: target})
+	if e != nil || v.Spec == nil {
+		return RuntimeSpec{}, ErrDenied
+	}
+	return *v.Spec, nil
 }

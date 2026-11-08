@@ -349,6 +349,10 @@ func invalidArgumentReason(body io.Reader) string {
 		return ""
 	}
 	if envelope.Error.Status == "FAILED_PRECONDITION" {
+		message := strings.ToLower(envelope.Error.Message)
+		if strings.Contains(message, "user location is not supported") || strings.Contains(message, "not available in your country") {
+			return "upstream_location_policy"
+		}
 		return "upstream_failed_precondition"
 	}
 	if envelope.Error.Status != "INVALID_ARGUMENT" {
