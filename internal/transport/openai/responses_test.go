@@ -35,13 +35,13 @@ func TestLunaResponsesProfileAndToolTurn(t *testing.T) {
 		}
 	}
 	var response map[string]any
-	json.Unmarshal([]byte(`{"id":"resp_1","model":"gpt-6-luna","status":"completed","reasoning":{"effort":"high"},"usage":{"input_tokens":30,"output_tokens":12,"total_tokens":42,"input_tokens_details":{"cached_tokens":10},"output_tokens_details":{"reasoning_tokens":7}}}`), &response)
+	json.Unmarshal([]byte(`{"id":"resp_1","model":"gpt-6-luna","status":"completed","reasoning":{"effort":"high"},"usage":{"input_tokens":30,"output_tokens":12,"total_tokens":42,"input_tokens_details":{"cached_tokens":10,"cache_write_tokens":4},"output_tokens_details":{"reasoning_tokens":7}}}`), &response)
 	events, done, err := p.normalizePayload("run", "response.completed", map[string]any{"response": response}, &state)
 	if err != nil || !done || len(events) != 3 {
 		t.Fatal("missing completed native events")
 	}
 	e := events[0]
-	if e.ToolCall == nil || e.ToolCall.ToolName != "tools.search" || e.ToolCall.ToolCallRef != "call_1" || e.ProviderSessionRef.ResponseRef != "resp_1" || e.Usage == nil || e.Usage.Validate() != nil || *e.Usage.CachedInputTokens != 10 || *e.Usage.ReasoningOutputTokens != 7 || *e.ProviderModelVersion != lunaModel || e.ProviderReasoningEffort != "high" {
+	if e.ToolCall == nil || e.ToolCall.ToolName != "tools.search" || e.ToolCall.ToolCallRef != "call_1" || e.ProviderSessionRef.ResponseRef != "resp_1" || e.Usage == nil || e.Usage.Validate() != nil || *e.Usage.CachedInputTokens != 10 || *e.Usage.CacheWriteInputTokens != 4 || *e.Usage.ReasoningOutputTokens != 7 || *e.ProviderModelVersion != lunaModel || e.ProviderReasoningEffort != "high" {
 		t.Fatalf("incorrect tool receipt: %+v", e)
 	}
 	b, err := p.submitToolResultBody(transport.SubmitToolResultRequest{RunID: "run", ToolCallRef: "call_1", ToolResultJSON: `{"ok":true}`, ProviderSessionRef: e.ProviderSessionRef})

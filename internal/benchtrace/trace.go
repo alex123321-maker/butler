@@ -94,6 +94,8 @@ type Record struct {
 	Batch           *transport.ToolCallBatch   `json:"tool_batch,omitempty"`
 	Usage           *transport.Usage           `json:"usage,omitempty"`
 	ReasoningEffort string                     `json:"reasoning_effort,omitempty"`
+	ServiceTier     string                     `json:"service_tier,omitempty"`
+	CacheRetention  string                     `json:"prompt_cache_retention,omitempty"`
 	ModelVersion    *string                    `json:"model_version,omitempty"`
 	ErrorCode       string                     `json:"error_code,omitempty"`
 	FirstOutputUS   *int64                     `json:"first_output_us,omitempty"`
@@ -155,7 +157,7 @@ func (w *Writer) Event(e transport.TransportEvent) {
 	w.mu.Lock()
 	defer w.mu.Unlock()
 	now := time.Now()
-	r := Record{Kind: "event", Event: e.EventType, Final: e.AssistantFinal, Tool: e.ToolCall, Batch: e.ToolCallBatch, Usage: e.Usage, ModelVersion: e.ProviderModelVersion, ReasoningEffort: e.ProviderReasoningEffort}
+	r := Record{Kind: "event", Event: e.EventType, Final: e.AssistantFinal, Tool: e.ToolCall, Batch: e.ToolCallBatch, Usage: e.Usage, ModelVersion: e.ProviderModelVersion, ReasoningEffort: e.ProviderReasoningEffort, ServiceTier: e.ProviderServiceTier, CacheRetention: e.ProviderCacheRetention}
 	if e.AssistantDelta != nil && e.AssistantDelta.DeltaType == "text" {
 		r.Delta = e.AssistantDelta
 	}

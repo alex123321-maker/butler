@@ -108,6 +108,8 @@ func (p *Provider) finishResponses(run string, payload map[string]any, state *st
 	observed := func(event transport.TransportEvent) transport.TransportEvent {
 		event.ProviderSessionRef = state.providerSession
 		event.Usage, event.ProviderReasoningEffort = usage, effort
+		event.ProviderServiceTier = stringValue(resp["service_tier"])
+		event.ProviderCacheRetention = stringValue(resp["prompt_cache_retention"])
 		if model != "" {
 			event.ProviderModelVersion = &model
 		}

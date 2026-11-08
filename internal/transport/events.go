@@ -38,6 +38,7 @@ type Usage struct {
 	ThinkingTokens *int `json:",omitempty"`
 	// Subsets of the corresponding input/output counts, never additive.
 	CachedInputTokens     *int `json:",omitempty"`
+	CacheWriteInputTokens *int `json:",omitempty"`
 	ReasoningOutputTokens *int `json:",omitempty"`
 }
 
@@ -53,7 +54,8 @@ func (u Usage) Validate() error {
 	if u.TotalTokens > 0 && u.TotalTokens < u.InputTokens+u.OutputTokens {
 		return fmt.Errorf("invalid observed token total")
 	}
-	if u.CachedInputTokens != nil && (*u.CachedInputTokens < 0 || *u.CachedInputTokens > u.InputTokens) ||
+	if u.CacheWriteInputTokens != nil && (*u.CacheWriteInputTokens < 0 || *u.CacheWriteInputTokens > u.InputTokens) ||
+		u.CachedInputTokens != nil && (*u.CachedInputTokens < 0 || *u.CachedInputTokens > u.InputTokens) ||
 		u.ReasoningOutputTokens != nil && (*u.ReasoningOutputTokens < 0 || *u.ReasoningOutputTokens > u.OutputTokens) {
 		return fmt.Errorf("invalid observed token detail")
 	}
@@ -104,6 +106,8 @@ type TransportEvent struct {
 	// about proprietary weight bytes or authority to change the selected model.
 	ProviderModelVersion    *string
 	ProviderReasoningEffort string
+	ProviderServiceTier     string
+	ProviderCacheRetention  string
 }
 
 func NewEvent(runID string, eventType EventType, providerName string) TransportEvent {

@@ -734,6 +734,7 @@ func usageFromMap(payload map[string]any) *transport.Usage {
 		OutputTokens:          intValue(payload["output_tokens"]),
 		TotalTokens:           intValue(payload["total_tokens"]),
 		CachedInputTokens:     detailCount(payload, "input_tokens_details", "cached_tokens"),
+		CacheWriteInputTokens: detailCount(payload, "input_tokens_details", "cache_write_tokens"),
 		ReasoningOutputTokens: detailCount(payload, "output_tokens_details", "reasoning_tokens"),
 	}
 }
