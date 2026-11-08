@@ -135,15 +135,21 @@ func (c *liveClient) capture(ctx context.Context, dir, session string, step Step
 				return errors.New("system_trace_write_failed")
 			}
 			d := json.NewDecoder(bytes.NewReader(raw))
+			observed := false
 			for {
 				var span benchtrace.SystemSpan
 				if err = d.Decode(&span); err == io.EOF {
 					break
 				}
 				if err != nil || span.Run != t.Run || span.Stage == "" || span.Started.IsZero() || span.Ended.Before(span.Started) || span.US < 0 {
-					return errors.New("system_trace_incomplete")
+					systemIssue = errors.New("system_trace_incomplete")
+					break
 				}
+				observed = true
 				t.Durations = append(t.Durations, durationSample{"core/" + span.Stage, &span.US})
+			}
+			if !observed && t.ModelCalls != nil && *t.ModelCalls > 0 {
+				systemIssue = errors.New("system_trace_incomplete")
 			}
 		} else if !os.IsNotExist(err) || t.ModelCalls != nil && *t.ModelCalls > 0 {
 			systemIssue = errors.New("system_trace_missing")

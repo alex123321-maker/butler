@@ -283,10 +283,17 @@ func (c *liveClient) turn(ctx context.Context, session, event string, step Step,
 	}
 	start := time.Now()
 	t.Started = start.UTC()
+	var grading *observation
 	defer func() {
 		end := time.Now()
 		t.Ended = end.UTC()
 		t.LatencyMS = end.Sub(start).Milliseconds()
+		if grading != nil {
+			if err := writeJSON(filepath.Join(dir, "grading.json"), grading); err != nil {
+				t.ObservedResult = t.Reason
+				t.Reason = "grading_write_failed"
+			}
+		}
 		// A timed-out or cancelled run still needs its last available evidence.
 		observe, stop := context.WithTimeout(context.WithoutCancel(ctx), 15*time.Second)
 		defer stop()
@@ -294,7 +301,9 @@ func (c *liveClient) turn(ctx context.Context, session, event string, step Step,
 			_ = c.db.QueryRow(observe, `SELECT input_id,COALESCE(run_id,'') FROM accepted_inputs WHERE event_id=$1 AND session_key=$2 AND source='web'`, event, session).Scan(&t.Input, &t.Run)
 		}
 		if err := c.capture(observe, dir, session, step, &t); err != nil {
-			t.ObservedResult = t.Reason
+			if t.ObservedResult == "" {
+				t.ObservedResult = t.Reason
+			}
 			t.Reason = err.Error()
 		}
 		t.ObserverUS = time.Since(end).Microseconds()
@@ -323,10 +332,8 @@ func (c *liveClient) turn(ctx context.Context, session, event string, step Step,
 		if reason := verdict(s, step); reason != "" {
 			t.Reason = reason
 			if !s.redacted {
-				if err := writeJSON(filepath.Join(dir, "grading.json"), observationFor(s)); err != nil {
-					t.ObservedResult = reason
-					t.Reason = "grading_write_failed"
-				}
+				proof := observationFor(s)
+				grading = &proof
 			}
 			return
 		}
