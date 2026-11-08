@@ -138,13 +138,13 @@ func cases(seed string, repeat int, setup Setup) []Case {
 	add("paused-reminder-lifecycle", "workflow", "schedule", Step{Prompt: "Создай уже приостановленное одноразовое тестовое напоминание с заголовком " + b + ". Укажи относительную задержку ровно 86400 секунд, часовой пояс UTC и максимум одно срабатывание. Проверь его текущую версию, отмени и прочти итоговое состояние этого же напоминания. Верни только состояние в английском написании.", Answer: "cancelled", Rule: "schedule", Witness: b, Allowed: []string{"schedule.create", "schedule.get", "schedule.cancel", "schedule.list"}})
 
 	for _, v := range []struct {
-		id, feature, search string
-		f                   SourceFixture
+		id, feature, search, scope string
+		f                          SourceFixture
 	}{
-		{"memory-original", "memory", "memory.search", setup.Memory},
-		{"notification-original", "messages", "messages.search", setup.Message},
+		{"memory-original", "memory", "memory.search", "в долговременной памяти Butler", setup.Memory},
+		{"notification-original", "messages", "messages.search", "в архиве Android-уведомлений владельца", setup.Message},
 	} {
-		add(v.id, "workflow", v.feature, Step{Prompt: "Найди исходную запись по запросу «" + v.f.Query + "». Открой сам источник и верни только указанный там код приёмки.", Answer: v.f.Code, Rule: "original", Target: v.f.ID, Witness: v.f.Code, Allowed: []string{v.search, "memory.open"}})
+		add(v.id, "workflow", v.feature, Step{Prompt: "Найди " + v.scope + " исходную запись по запросу «" + v.f.Query + "». Открой сам источник и верни только указанный там код приёмки.", Answer: v.f.Code, Rule: "original", Target: v.f.ID, Witness: v.f.Code, Allowed: []string{v.search, "memory.open"}})
 		if v.f.Query == "" || v.f.ID == "" || v.f.Code == "" {
 			all[len(all)-1].Missing = "seeded " + v.feature + " source"
 		}
