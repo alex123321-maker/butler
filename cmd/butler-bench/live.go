@@ -25,6 +25,7 @@ import (
 type Candidate struct {
 	Provider string `json:"provider"`
 	Model    string `json:"model"`
+	Effort   string `json:"reasoning_effort,omitempty"`
 }
 type Turn struct {
 	Durations      []durationSample `json:"step_durations,omitempty"`

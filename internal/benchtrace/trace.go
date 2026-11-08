@@ -78,25 +78,28 @@ func request(v any) Request {
 }
 
 type Record struct {
-	Kind          string                     `json:"kind"`
-	At            time.Time                  `json:"at"`
-	ElapsedUS     int64                      `json:"elapsed_us"`
-	Run           string                     `json:"run,omitempty"`
-	Operation     string                     `json:"operation,omitempty"`
-	Provider      string                     `json:"provider,omitempty"`
-	Model         string                     `json:"model,omitempty"`
-	Request       *Request                   `json:"request,omitempty"`
-	Stage         transport.ProviderStage    `json:"stage,omitempty"`
-	Event         transport.EventType        `json:"event,omitempty"`
-	Delta         *transport.AssistantDelta  `json:"delta,omitempty"`
-	Final         *transport.AssistantFinal  `json:"final,omitempty"`
-	Tool          *transport.ToolCallRequest `json:"tool_call,omitempty"`
-	Batch         *transport.ToolCallBatch   `json:"tool_batch,omitempty"`
-	Usage         *transport.Usage           `json:"usage,omitempty"`
-	ModelVersion  *string                    `json:"model_version,omitempty"`
-	ErrorCode     string                     `json:"error_code,omitempty"`
-	FirstOutputUS *int64                     `json:"first_output_us,omitempty"`
-	Outcome       string                     `json:"outcome,omitempty"`
+	Kind            string                     `json:"kind"`
+	At              time.Time                  `json:"at"`
+	ElapsedUS       int64                      `json:"elapsed_us"`
+	Run             string                     `json:"run,omitempty"`
+	Operation       string                     `json:"operation,omitempty"`
+	Provider        string                     `json:"provider,omitempty"`
+	Model           string                     `json:"model,omitempty"`
+	Request         *Request                   `json:"request,omitempty"`
+	Stage           transport.ProviderStage    `json:"stage,omitempty"`
+	Event           transport.EventType        `json:"event,omitempty"`
+	Delta           *transport.AssistantDelta  `json:"delta,omitempty"`
+	Final           *transport.AssistantFinal  `json:"final,omitempty"`
+	Tool            *transport.ToolCallRequest `json:"tool_call,omitempty"`
+	Batch           *transport.ToolCallBatch   `json:"tool_batch,omitempty"`
+	Usage           *transport.Usage           `json:"usage,omitempty"`
+	ReasoningEffort string                     `json:"reasoning_effort,omitempty"`
+	ServiceTier     string                     `json:"service_tier,omitempty"`
+	CacheRetention  string                     `json:"prompt_cache_retention,omitempty"`
+	ModelVersion    *string                    `json:"model_version,omitempty"`
+	ErrorCode       string                     `json:"error_code,omitempty"`
+	FirstOutputUS   *int64                     `json:"first_output_us,omitempty"`
+	Outcome         string                     `json:"outcome,omitempty"`
 }
 
 type Writer struct {
@@ -154,7 +157,7 @@ func (w *Writer) Event(e transport.TransportEvent) {
 	w.mu.Lock()
 	defer w.mu.Unlock()
 	now := time.Now()
-	r := Record{Kind: "event", Event: e.EventType, Final: e.AssistantFinal, Tool: e.ToolCall, Batch: e.ToolCallBatch, Usage: e.Usage, ModelVersion: e.ProviderModelVersion}
+	r := Record{Kind: "event", Event: e.EventType, Final: e.AssistantFinal, Tool: e.ToolCall, Batch: e.ToolCallBatch, Usage: e.Usage, ModelVersion: e.ProviderModelVersion, ReasoningEffort: e.ProviderReasoningEffort, ServiceTier: e.ProviderServiceTier, CacheRetention: e.ProviderCacheRetention}
 	if e.AssistantDelta != nil && e.AssistantDelta.DeltaType == "text" {
 		r.Delta = e.AssistantDelta
 	}
@@ -191,6 +194,8 @@ func Inspect(src io.Reader, run, op, provider, model string) (Record, error) {
 	var end Record
 	lineNum := 0
 	var last int64
+	var version *string
+	var effort string
 	for {
 		line, err := reader.ReadBytes('\n')
 		if len(line) > 0 {
@@ -205,6 +210,12 @@ func Inspect(src io.Reader, run, op, provider, model string) (Record, error) {
 			} else {
 				switch r.Kind {
 				case "stage", "event":
+					if r.ModelVersion != nil && r.ReasoningEffort != "" {
+						if version != nil && (*version != *r.ModelVersion || effort != r.ReasoningEffort) {
+							return end, errors.New("conflicting native response identity")
+						}
+						version, effort = r.ModelVersion, r.ReasoningEffort
+					}
 				case "end":
 					if r.Outcome == "" {
 						return end, errors.New("missing model outcome")
@@ -227,5 +238,6 @@ func Inspect(src io.Reader, run, op, provider, model string) (Record, error) {
 	if end.Kind == "" {
 		return end, errors.New("model trace incomplete")
 	}
+	end.ModelVersion, end.ReasoningEffort = version, effort
 	return end, nil
 }

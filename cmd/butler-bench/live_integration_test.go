@@ -145,7 +145,7 @@ func TestLiveCollectorWithPostgres(t *testing.T) {
 	})
 	server := httptest.NewServer(handler)
 	defer server.Close()
-	client, err := newClient(ctx, server.URL, tokenFile, Candidate{"fixture", "model-a"})
+	client, err := newClient(ctx, server.URL, tokenFile, Candidate{Provider: "fixture", Model: "model-a"})
 	if err != nil {
 		t.Fatal(err)
 	}

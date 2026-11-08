@@ -78,6 +78,7 @@ func command(ctx context.Context, args []string) error {
 		traceDir := fs.String("trace-dir", "", "private directory shared with the lab Core via BUTLER_BENCH_TRACE_DIR")
 		provider := fs.String("provider", "", "expected execution ledger provider")
 		model := fs.String("model", "", "expected execution ledger model")
+		effort := fs.String("effort", "", "required reasoning effort observed in each native response")
 		if err := parseFlags(fs, args); err != nil {
 			return err
 		}
@@ -138,7 +139,10 @@ func command(ctx context.Context, args []string) error {
 		if *setupFile == "" || *model == "" || *provider == "" || *token == "" || *out == "" || *out == "-" || *traceDir == "" || *endpoint == "" {
 			return errors.New("run needs -setup, -provider, -model, -endpoint, -owner-token-file, -trace-dir and -out")
 		}
-		candidate := Candidate{*provider, *model}
+		candidate := Candidate{Provider: *provider, Model: *model, Effort: *effort}
+		if !candidate.validEffort() {
+			return errors.New("unsupported reasoning effort profile")
+		}
 		preflight, cancel := context.WithTimeout(ctx, 8*time.Second)
 		client, err := newClient(preflight, *endpoint, *token, candidate)
 		cancel()

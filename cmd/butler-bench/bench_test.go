@@ -209,7 +209,7 @@ func TestPairedMatrixPreservesFailuresAndInterruptions(t *testing.T) {
 	root := t.TempDir()
 	dirs := []string{filepath.Join(root, "a"), filepath.Join(root, "b")}
 	for i, d := range dirs {
-		r := newRun(p, Candidate{"fixture", []string{"a", "b"}[i]}, testSetup())
+		r := newRun(p, Candidate{Provider: "fixture", Model: []string{"a", "b"}[i]}, testSetup())
 		if err := execute(t.Context(), simulated{i == 1}, d, r, work); err != nil {
 			t.Fatal(err)
 		}
