@@ -1,0 +1,62 @@
+name: Butler benchmark
+on:
+  pull_request:
+    paths:
+      - 'apps/**'
+      - 'internal/**'
+      - 'cmd/butler-bench/**'
+      - 'configs/tools.json'
+      - 'migrations/**'
+      - 'go.*'
+      - '.github/workflows/butler-bench.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'apps/**'
+      - 'internal/**'
+      - 'cmd/butler-bench/**'
+      - 'configs/tools.json'
+      - 'migrations/**'
+      - 'go.*'
+      - '.github/workflows/butler-bench.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  system-and-collector:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    services:
+      postgres:
+        image: pgvector/pgvector:pg17
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+          POSTGRES_DB: butler_bench_test
+        ports: ['5432:5432']
+        options: --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 12
+    env:
+      GOCACHE: ${{ github.workspace }}/.cache/go-build-linux
+      GOMODCACHE: ${{ github.workspace }}/.cache/go-mod
+      BUTLER_BENCH_TEST_DB: postgres://postgres@127.0.0.1:5432/butler_bench_test?sslmode=disable
+      BUTLER_BENCH_PRODUCT_DB: postgres://postgres@127.0.0.1:5432/butler_bench_test?sslmode=disable
+      BUTLER_BENCH_TEST_EXECUTABLE: ${{ github.workspace }}/.cache/butler-bench
+      BUTLER_BENCH_FIXTURE_OUTPUT: ${{ github.workspace }}/.cache/benchmark-controls
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with: {go-version-file: go.mod, cache: false}
+      - run: go build -o .cache/butler-bench ./cmd/butler-bench
+      - run: go test -count=1 ./cmd/butler-bench ./internal/benchtrace
+      - run: go test -count=1 -run '^TestBenchmarkPublicIngressThroughOfflineComparison$' ./apps/orchestrator/internal/app
+      - run: .cache/butler-bench system -out .cache/benchmark-system.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: synthetic-benchmark-results
+          retention-days: 14
+          include-hidden-files: true
+          path: |
+            .cache/benchmark-system.json
+            .cache/benchmark-controls/

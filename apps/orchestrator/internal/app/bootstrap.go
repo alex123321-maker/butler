@@ -580,6 +580,7 @@ func newApp(ctx context.Context, telegramOptions *TelegramCommunicationOptions) 
 			Communication:          communicationKernel,
 			CommunicationAdmission: communicationAdmission,
 			WaitBrowserOwner:       browserOwnerWait(cfg, postgres.Pool()),
+			BenchmarkTraceDir:      os.Getenv("BUTLER_BENCH_TRACE_DIR"),
 			Metrics:                m,
 			MemoryScopeResolver: func(ctx context.Context) ([]memoryservice.Scope, error) {
 				scopes, e := sourceCatalog.ExtraScopes(ctx, "memory_read")

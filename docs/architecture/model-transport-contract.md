@@ -1,5 +1,14 @@
 # Butler — Model Transport Contract
 
+An explicitly enrolled [benchmark request](../../cmd/butler-bench/README.md)
+can record the normalized input items, tool definitions, continuation data,
+visible outputs, reported usage/version and observed provider stage timings
+at the admission wrapper. The operator and Core share a private directory
+through `BUTLER_BENCH_TRACE_DIR`. The wrapper binds captures to the original
+Web event, session, run and admitted operation. Collection errors are surfaced
+by the benchmark reader. Provider credentials and opaque session handles stay
+inside their owning adapter.
+
 Issue97's [native research profiles](../../cmd/effort-eval/README.md) explicitly
 select paid Flash Low/High on the same discovered Cloud Code route. Trusted
 construction-time `ThinkingLevel=LOW/HIGH` must match the configured model and

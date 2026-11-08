@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/butler/butler/internal/benchtrace"
 	"github.com/butler/butler/internal/budget"
 	sessionv1 "github.com/butler/butler/internal/gen/session/v1"
 	"github.com/butler/butler/internal/modelprovider"
@@ -23,17 +24,17 @@ func (p *budgetedProvider) Capabilities(ctx context.Context, c transport.Transpo
 	return cap, err
 }
 func (p *budgetedProvider) StartRun(ctx context.Context, r transport.StartRunRequest) (transport.EventStream, error) {
-	return p.admit(ctx, r.Context.RunID, func(turn context.Context) (transport.EventStream, error) { return p.ModelProvider.StartRun(turn, r) })
+	return p.admit(ctx, r.Context.RunID, &r, func(turn context.Context) (transport.EventStream, error) { return p.ModelProvider.StartRun(turn, r) })
 }
 func (p *budgetedProvider) ContinueRun(ctx context.Context, r transport.ContinueRunRequest) (transport.EventStream, error) {
-	return p.admit(ctx, r.RunID, func(turn context.Context) (transport.EventStream, error) { return p.ModelProvider.ContinueRun(turn, r) })
+	return p.admit(ctx, r.RunID, &r, func(turn context.Context) (transport.EventStream, error) { return p.ModelProvider.ContinueRun(turn, r) })
 }
 func (p *budgetedProvider) SubmitToolResult(ctx context.Context, r transport.SubmitToolResultRequest) (transport.EventStream, error) {
-	return p.admit(ctx, r.RunID, func(turn context.Context) (transport.EventStream, error) {
+	return p.admit(ctx, r.RunID, &r, func(turn context.Context) (transport.EventStream, error) {
 		return p.ModelProvider.SubmitToolResult(turn, r)
 	})
 }
-func (p *budgetedProvider) admit(ctx context.Context, runID string, call func(context.Context) (transport.EventStream, error)) (transport.EventStream, error) {
+func (p *budgetedProvider) admit(ctx context.Context, runID string, request any, call func(context.Context) (transport.EventStream, error)) (transport.EventStream, error) {
 	s := p.service
 	if s.config.WaitBrowserOwner != nil {
 		if err := s.config.WaitBrowserOwner(ctx, runID); err != nil {
@@ -76,8 +77,27 @@ func (p *budgetedProvider) admit(ctx context.Context, runID string, call func(co
 	turn = transport.WithInputByteLimit(turn, s.config.Budgets.Policy.ModelInputBytes)
 	turn = budget.WithModelOperation(turn, a.OperationID)
 	turn, phases := withModelRetryStages(turn)
+	var trace *benchtrace.Writer
+	if s.config.BenchmarkTraceDir != "" {
+		var traceErr error
+		trace, traceErr = benchtrace.Begin(turn, runID, a.OperationID, s.config.ProviderName, s.config.ModelName, request)
+		if traceErr != nil {
+			s.log.Warn("benchmark model request capture unavailable")
+		}
+		turn = trace.ObserveStages(turn)
+	}
+	endTrace := func(reason string) {
+		if err := trace.End(reason); err != nil {
+			s.log.Warn("benchmark model trace incomplete")
+		}
+	}
 	stream, err := call(turn)
 	if err != nil {
+		reason := transport.DiagnosticCode(err)
+		if reason == "" {
+			reason = "provider_call_error"
+		}
+		endTrace(reason)
 		if modelTurnLimited && phases.inferencePhase() && ctx.Err() == nil && (errors.Is(err, context.DeadlineExceeded) || transport.DiagnosticCode(err) == string(transport.ErrorTypeProviderTimeout)) {
 			err = &modelTurnTimeout{operationID: a.OperationID}
 		} else if errors.Is(turn.Err(), context.DeadlineExceeded) && ctx.Err() == nil {
@@ -93,6 +113,8 @@ func (p *budgetedProvider) admit(ctx context.Context, runID string, call func(co
 	go func() {
 		defer close(out)
 		defer cancel()
+		outcome := "stream_closed"
+		defer func() { endTrace(outcome) }()
 		deadlineEvent := func() {
 			if ctx.Err() == nil {
 				event := transport.NewTransportErrorEvent(runID, p.Name(), fmt.Errorf("execution budget deadline"))
@@ -110,15 +132,18 @@ func (p *budgetedProvider) admit(ctx context.Context, runID string, call func(co
 		for {
 			select {
 			case <-turn.Done():
+				outcome = "context_ended"
 				deadlineEvent()
 				return
 			case event, ok := <-stream:
 				if !ok {
 					if turn.Err() != nil {
+						outcome = "context_ended"
 						deadlineEvent()
 					}
 					return
 				}
+				trace.Event(event)
 				// Only this trusted admission wrapper emits retry eligibility.
 				// Provider codes/messages cannot identify an owning operation.
 				if event.EventType == transport.EventTypeRunTimedOut || event.EventType == transport.EventTypeTransportError && event.TransportError != nil && (event.TransportError.Type == transport.ErrorTypeProviderTimeout || event.TransportError.Type == "model_turn_timeout") {
@@ -163,13 +188,16 @@ func (p *budgetedProvider) admit(ctx context.Context, runID string, call func(co
 				select {
 				case out <- event:
 				case <-turn.Done():
+					outcome = "context_ended"
 					deadlineEvent()
 					return
 				}
 				if event.EventType == transport.EventTypeToolCallRequested || event.EventType == transport.EventTypeToolCallBatchRequested {
+					outcome = "tool_requested"
 					return
 				}
 				if stopTurn {
+					outcome = "usage_rejected"
 					return
 				}
 			}

@@ -167,6 +167,8 @@ type Config struct {
 	CommunicationAdmission func(context.Context, string) error
 
 	WaitBrowserOwner func(context.Context, string) error
+	// Operator-mounted directory for explicitly enrolled synthetic inputs.
+	BenchmarkTraceDir string
 
 	ToolDiscoveryEnabled bool
 	Metrics              *metrics.Registry

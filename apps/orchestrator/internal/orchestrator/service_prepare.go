@@ -11,6 +11,7 @@ import (
 
 	promptmgmt "github.com/butler/butler/apps/orchestrator/internal/prompt"
 	"github.com/butler/butler/apps/orchestrator/internal/session"
+	"github.com/butler/butler/internal/benchtrace"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 	"github.com/butler/butler/internal/ingress"
 	"github.com/butler/butler/internal/memory/adaptive"
@@ -26,6 +27,9 @@ import (
 )
 
 func (s *Service) prepareRun(ctx context.Context, event ingress.InputEvent) (preparedRun, error) {
+	if s.config.BenchmarkTraceDir != "" {
+		defer benchtrace.Measure(ctx, "prepare_run")()
+	}
 	payload := map[string]any{}
 	if strings.TrimSpace(event.PayloadJSON) != "" {
 		if err := json.Unmarshal([]byte(event.PayloadJSON), &payload); err != nil {
@@ -170,6 +174,9 @@ func (s *Service) prepareRun(ctx context.Context, event ingress.InputEvent) (pre
 }
 
 func (s *Service) attachMemoryContext(ctx context.Context, sessionKey, userID, userMessage string, prepared *preparedRun) error {
+	if s.config.BenchmarkTraceDir != "" {
+		defer benchtrace.Measure(ctx, "memory_context")()
+	}
 	if prepared == nil {
 		return nil
 	}
@@ -254,6 +261,9 @@ func (s *Service) memoryQueryPolicy(ctx context.Context, sessionKey, userID stri
 }
 
 func (s *Service) attachToolContext(ctx context.Context, prepared *preparedRun) error {
+	if s.config.BenchmarkTraceDir != "" {
+		defer benchtrace.Measure(ctx, "tool_catalog")()
+	}
 	if s.config.ToolDiscoveryEnabled && s.config.ToolCatalog == nil {
 		return fmt.Errorf("tool discovery requires a scoped Broker catalog")
 	}
@@ -340,6 +350,9 @@ func (s *Service) attachToolContext(ctx context.Context, prepared *preparedRun) 
 }
 
 func (s *Service) attachTranscriptContext(ctx context.Context, sessionKey string, prepared *preparedRun) error {
+	if s.config.BenchmarkTraceDir != "" {
+		defer benchtrace.Measure(ctx, "transcript_context")()
+	}
 	if prepared == nil || s.transcript == nil {
 		return nil
 	}
@@ -481,6 +494,9 @@ func (s *Service) attachTranscriptContext(ctx context.Context, sessionKey string
 }
 
 func (s *Service) attachPromptContext(ctx context.Context, prepared *preparedRun) error {
+	if s.config.BenchmarkTraceDir != "" {
+		defer benchtrace.Measure(ctx, "prompt_assembly")()
+	}
 	if prepared == nil || s.config.PromptManager == nil || s.config.PromptAssembler == nil {
 		return nil
 	}
