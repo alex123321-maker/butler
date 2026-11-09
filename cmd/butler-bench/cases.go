@@ -166,6 +166,10 @@ func cases(seed string, repeat int, setup Setup) []Case {
 		s := read(item.prompt, item.answer, item.name, item.field, item.answer)
 		s.Target = item.url
 		s.Rule = "site_read"
+		s.Allowed = []string{"browser.read", "browser.open"}
+		if item.id == "fetch-document" {
+			s.Allowed = append(s.Allowed, "web.fetch", "http.download")
+		}
 		add(item.id, "recipient", "browser", s)
 		if site.Origin == "" || item.answer == "" {
 			all[len(all)-1].Missing = "browser recipient"

@@ -51,6 +51,10 @@ func grade(s Step, answer string, calls []call) string {
 			return "unresolved_effect"
 		}
 	}
+	// Punctuation on the intermediate acknowledgement is not the task result.
+	if s.Rule == "" && s.Answer == "ПРИНЯТО" {
+		answer = strings.TrimSuffix(strings.TrimSpace(answer), ".")
+	}
 	if s.Answer != "" && !exact(answer, s.Answer) {
 		return "wrong_answer"
 	}
@@ -139,12 +143,22 @@ func grade(s Step, answer string, calls []call) string {
 	case "two_parses":
 		first, second := false, false
 		for _, c := range calls {
-			if c.Name != "http.parse_html" || c.Status != "completed" || !matches(c.Result, s.Witness) {
+			if c.Name != "http.parse_html" || c.Status != "completed" {
 				continue
 			}
 			html := str(c.Args, "content")
-			first = first || html == "<i>"+s.Target+"</i><b class='active'>"+s.Witness+"</b>"
-			second = second || html == "<b class='active'>"+s.Witness+"</b><s>"+s.Target+"</s>"
+			left := "<i>" + s.Target + "</i><b class='active'>" + s.Witness + "</b>"
+			right := "<b class='active'>" + s.Witness + "</b><s>" + s.Target + "</s>"
+			if strings.Contains(html, left) && strings.Contains(html, right) {
+				var result []string
+				if json.Unmarshal(field(c.Result, "matches"), &result) == nil && slices.Equal(result, []string{s.Witness, s.Witness}) && str(c.Args, "selector") == "b.active" {
+					return "pass"
+				}
+			}
+			if matches(c.Result, s.Witness) {
+				first = first || html == left
+				second = second || html == right
+			}
 		}
 		if first && second {
 			return "pass"
@@ -178,6 +192,8 @@ func grade(s Step, answer string, calls []call) string {
 				key := "text"
 				if c.Name == "web.fetch" {
 					key = "content_text"
+				} else if c.Name == "http.download" {
+					key = "body"
 				}
 				if str(c.Args, "url") == s.Target && strings.Contains(str(c.Result, key), s.Witness) {
 					return "pass"
