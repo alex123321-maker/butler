@@ -15,7 +15,7 @@ func (c Candidate) validEffort() bool {
 	}
 	switch c.Effort {
 	case "none", "low", "medium", "high", "xhigh", "max":
-		return c.Provider == "openai" && c.Model == "gpt-6-luna"
+		return c.Provider == "openai" && (c.Model == "gpt-6-luna" || c.Model == "gpt-6.1-terra")
 	}
 	return false
 }

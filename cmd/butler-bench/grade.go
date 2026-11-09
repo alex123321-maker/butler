@@ -103,6 +103,10 @@ func grade(s Step, answer string, calls []call) string {
 				continue
 			}
 			if c.Name == "skills.search" {
+				var digests []string
+				if json.Unmarshal(field(c.Result, "skill_digests"), &digests) == nil && slices.Contains(digests, s.Witness) {
+					found = true
+				}
 				var descriptors []skills.Descriptor
 				if json.Unmarshal(field(c.Result, "skills"), &descriptors) == nil {
 					for _, d := range descriptors {
@@ -112,8 +116,12 @@ func grade(s Step, answer string, calls []call) string {
 					}
 				}
 			}
-			if found && c.Name == "skills.load" && str(c.Args, "digest") == s.Witness && str(c.Result, "digest") == s.Witness && str(field(c.Result, "manifest"), "version") == s.Answer {
-				return "pass"
+			if found && c.Name == "skills.load" && str(c.Args, "digest") == s.Witness && str(c.Result, "digest") == s.Witness {
+				manifest := field(c.Result, "manifest")
+				// Core keeps only the immutable digest when it journals a skill.
+				if str(manifest, "version") == s.Answer || (manifest == nil && string(field(c.Result, "reload_current_data")) == "true") {
+					return "pass"
+				}
 			}
 		}
 	case "workspace":
