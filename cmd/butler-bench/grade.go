@@ -51,6 +51,10 @@ func grade(s Step, answer string, calls []call) string {
 			return "unresolved_effect"
 		}
 	}
+	// Punctuation on the intermediate acknowledgement is not the task result.
+	if s.Rule == "" && s.Answer == "ПРИНЯТО" {
+		answer = strings.TrimSuffix(strings.TrimSpace(answer), ".")
+	}
 	if s.Answer != "" && !exact(answer, s.Answer) {
 		return "wrong_answer"
 	}
@@ -96,6 +100,11 @@ func grade(s Step, answer string, calls []call) string {
 		if verifiedOriginal(s, calls) {
 			return "pass"
 		}
+	case "site_read":
+		if observedSiteRead(s, calls) {
+			return "pass"
+		}
+
 	case "skill":
 		found := false
 		for _, c := range calls {
@@ -139,12 +148,22 @@ func grade(s Step, answer string, calls []call) string {
 	case "two_parses":
 		first, second := false, false
 		for _, c := range calls {
-			if c.Name != "http.parse_html" || c.Status != "completed" || !matches(c.Result, s.Witness) {
+			if c.Name != "http.parse_html" || c.Status != "completed" {
 				continue
 			}
 			html := str(c.Args, "content")
-			first = first || html == "<i>"+s.Target+"</i><b class='active'>"+s.Witness+"</b>"
-			second = second || html == "<b class='active'>"+s.Witness+"</b><s>"+s.Target+"</s>"
+			left := "<i>" + s.Target + "</i><b class='active'>" + s.Witness + "</b>"
+			right := "<b class='active'>" + s.Witness + "</b><s>" + s.Target + "</s>"
+			if strings.Contains(html, left) && strings.Contains(html, right) {
+				var result []string
+				if json.Unmarshal(field(c.Result, "matches"), &result) == nil && slices.Equal(result, []string{s.Witness, s.Witness}) && str(c.Args, "selector") == "b.active" {
+					return "pass"
+				}
+			}
+			if matches(c.Result, s.Witness) {
+				first = first || html == left
+				second = second || html == right
+			}
 		}
 		if first && second {
 			return "pass"
@@ -172,14 +191,6 @@ func grade(s Step, answer string, calls []call) string {
 				var list schedulecontrol.Receipt
 				var args schedulecontrol.Args
 				if json.Unmarshal(c.Args, &args) == nil && args.AfterID == "" && args.Limit > 0 && args.Limit <= 5 && c.Effect == "effect_confirmed" && string(c.Result) != "null" && json.Unmarshal(c.Result, &list) == nil && exact(answer, strconv.Itoa(len(list.Schedules))) {
-					return "pass"
-				}
-			case "site_read":
-				key := "text"
-				if c.Name == "web.fetch" {
-					key = "content_text"
-				}
-				if str(c.Args, "url") == s.Target && strings.Contains(str(c.Result, key), s.Witness) {
 					return "pass"
 				}
 			case "spa":
@@ -342,4 +353,51 @@ func scheduleLifecycle(title string, calls []call) bool {
 		}
 	}
 	return false
+}
+
+// Verify the recipient's value in a completed read of the requested URL.
+// Inline extracts, writes and an unrelated tab cannot establish provenance.
+func observedSiteRead(s Step, calls []call) bool {
+	found := false
+	sessions := map[string]bool{}
+	for _, c := range calls {
+		if c.Name == "http.request" {
+			method := strings.ToUpper(str(c.Args, "method"))
+			if (method != "" && method != "GET" && method != "HEAD") || str(c.Args, "body") != "" {
+				return false
+			}
+		}
+		if c.Status != "completed" {
+			continue
+		}
+		url := str(c.Args, "url")
+		switch c.Name {
+		case "web.fetch_batch":
+			var urls []string
+			var items []json.RawMessage
+			if json.Unmarshal(field(c.Args, "urls"), &urls) != nil || !slices.Equal(urls, []string{s.Target}) || json.Unmarshal(field(c.Result, "items"), &items) != nil {
+				continue
+			}
+			for _, item := range items {
+				found = found || str(item, "requested_url") == s.Target && strings.Contains(str(item, "content_text"), s.Witness)
+			}
+		case "browser.open", "browser.read":
+			if url != s.Target {
+				continue
+			}
+			found = found || strings.Contains(str(c.Result, "text"), s.Witness)
+			if id := str(c.Result, "browser_session_id"); c.Name == "browser.open" && id != "" {
+				sessions[id] = true
+			}
+		case "browser.snapshot", "browser.extract_text":
+			found = found || sessions[str(c.Args, "browser_session_id")] && strings.Contains(str(c.Result, "text"), s.Witness)
+		case "browser.close":
+			delete(sessions, str(c.Args, "browser_session_id"))
+		case "web.fetch", "web.extract":
+			found = found || url == s.Target && str(c.Args, "html") == "" && str(c.Args, "text") == "" && strings.Contains(str(c.Result, "content_text"), s.Witness)
+		case "http.download", "http.request":
+			found = found || url == s.Target && strings.Contains(str(c.Result, "body"), s.Witness)
+		}
+	}
+	return found
 }

@@ -22,7 +22,7 @@ const version = "butler-bench/1"
 
 // Include the evaluator and runner in the comparison identity.
 //
-//go:embed cases.go discovery.tsv grade.go live.go profile.go matrix.go report.go evidence.go timeline.sql replay.go
+//go:embed cases.go discovery.tsv grade.go owner.go live.go profile.go matrix.go report.go evidence.go timeline.sql replay.go
 var protocol embed.FS
 
 func digest(v any) string {
@@ -245,7 +245,7 @@ func execute(ctx context.Context, client executor, dir string, run Run, work []C
 		fmt.Fprintf(os.Stderr, "[%d/%d] %s %s %s\n", i+1, len(work), row.Status, c.ID, row.Reason)
 		// A lost submission or uncertain observer may leave work in flight.
 		// Keep the original plan, stop issuing new work and expose all remaining slots.
-		if row.Status == "error" {
+		if row.Status == "error" && !isolatedOwnerFailure(row.Reason) {
 			return fmt.Errorf("collection stopped: %s", row.Reason)
 		}
 	}

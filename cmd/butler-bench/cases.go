@@ -24,15 +24,17 @@ type Site struct {
 // Setup identifies the deployed code and the common non-model environment.
 // The read-only fixture answers stay in the evaluator.
 type Setup struct {
-	Commit        string             `json:"butler_commit"`
-	Environment   string             `json:"environment_sha256"`
-	Description   string             `json:"environment_description,omitempty"`
-	DisabledTools []string           `json:"disabled_tools,omitempty"`
-	Site          Site               `json:"site,omitempty"`
-	Memory        SourceFixture      `json:"memory,omitempty"`
-	Message       SourceFixture      `json:"message,omitempty"`
-	Skill         SkillFixture       `json:"skill,omitempty"`
-	Bindings      map[string]Binding `json:"bindings,omitempty"`
+	ApprovalPolicy string             `json:"approval_policy,omitempty"`
+	TabOrigin      string             `json:"fixture_tab_origin,omitempty"`
+	Commit         string             `json:"butler_commit"`
+	Environment    string             `json:"environment_sha256"`
+	Description    string             `json:"environment_description,omitempty"`
+	DisabledTools  []string           `json:"disabled_tools,omitempty"`
+	Site           Site               `json:"site,omitempty"`
+	Memory         SourceFixture      `json:"memory,omitempty"`
+	Message        SourceFixture      `json:"message,omitempty"`
+	Skill          SkillFixture       `json:"skill,omitempty"`
+	Bindings       map[string]Binding `json:"bindings,omitempty"`
 }
 
 type SourceFixture struct {
@@ -164,6 +166,10 @@ func cases(seed string, repeat int, setup Setup) []Case {
 		s := read(item.prompt, item.answer, item.name, item.field, item.answer)
 		s.Target = item.url
 		s.Rule = "site_read"
+		s.Allowed = []string{"browser.read", "browser.open", "browser.snapshot", "browser.extract_text", "browser.close"}
+		if item.id == "fetch-document" {
+			s.Allowed = append(s.Allowed, "web.fetch", "web.extract", "web.fetch_batch", "http.download", "http.request")
+		}
 		add(item.id, "recipient", "browser", s)
 		if site.Origin == "" || item.answer == "" {
 			all[len(all)-1].Missing = "browser recipient"

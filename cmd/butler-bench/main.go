@@ -150,6 +150,14 @@ func command(ctx context.Context, args []string) error {
 			return err
 		}
 		defer client.db.Close()
+		if setup.ApprovalPolicy != "" && setup.ApprovalPolicy != "approve" && setup.ApprovalPolicy != "observe" {
+			return errors.New("unknown benchmark approval policy")
+		}
+		client.approveOwner = setup.ApprovalPolicy != "observe"
+		client.tabOrigin = setup.TabOrigin
+		if client.tabOrigin == "" {
+			client.tabOrigin = setup.Site.Origin
+		}
 		defer client.http.CloseIdleConnections()
 		client.traceDir, err = filepath.Abs(*traceDir)
 		if err != nil {
