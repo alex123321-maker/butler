@@ -67,11 +67,11 @@ func NewProvider(cfg Config, client *http.Client) (*Provider, error) {
 		default:
 			return nil, fmt.Errorf("invalid OpenAI reasoning effort")
 		}
-		if cfg.Model != lunaModel {
-			return nil, fmt.Errorf("explicit OpenAI reasoning effort requires %s", lunaModel)
+		if !supportsReasoningProfile(cfg.Model) {
+			return nil, fmt.Errorf("explicit OpenAI reasoning effort is unsupported for %s", cfg.Model)
 		}
 	}
-	if cfg.Model == lunaModel {
+	if supportsReasoningProfile(cfg.Model) {
 		cfg.TransportMode = TransportModeSSEOnly
 	}
 	if strings.TrimSpace(cfg.BaseURL) == "" {

@@ -13,17 +13,25 @@ import (
 
 const lunaModel = "gpt-6-luna"
 
+func supportsReasoningProfile(model string) bool {
+	return model == lunaModel || model == "gpt-6.1-terra"
+}
+
 // Responses caps the entire generation, including billed reasoning tokens.
 func (p *Provider) InferenceLimits() (int64, int64) {
 	if p.config.Model == lunaModel {
 		return 922000, 8192
 	}
+	if p.config.Model == "gpt-6.1-terra" {
+		// Conservative operational limits for this Responses profile.
+		return 128000, 8192
+	}
 	return 0, 0
 }
 
 func (p *Provider) responsesBody(payload map[string]any) ([]byte, error) {
-	if p.config.Model == lunaModel {
-		if payload["model"] != lunaModel {
+	if supportsReasoningProfile(p.config.Model) {
+		if payload["model"] != p.config.Model {
 			return nil, fmt.Errorf("model differs from configured OpenAI allowance")
 		}
 		_, output := p.InferenceLimits()

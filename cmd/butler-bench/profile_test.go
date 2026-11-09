@@ -43,3 +43,15 @@ func TestProfileComparisonReadsNativeEvidence(t *testing.T) {
 		t.Fatal("relabeled native profile accepted")
 	}
 }
+
+func TestReviewedSkillDurableEvidence(t *testing.T) {
+	digest := "88452b40ba1c4d205eb8ef08aab39f69d2b5ea4da7c4a98285866e9955303035"
+	s := Step{Rule: "skill", Answer: "1.2.7", Witness: digest, Allowed: []string{"skills.search", "skills.load"}}
+	calls := []call{
+		{Name: "skills.search", Status: "completed", Result: json.RawMessage(`{"skill_digests":["` + digest + `"],"reload_current_data":true}`)},
+		{Name: "skills.load", Status: "completed", Args: json.RawMessage(`{"digest":"` + digest + `"}`), Result: json.RawMessage(`{"digest":"` + digest + `","reload_current_data":true}`)},
+	}
+	if grade(s, s.Answer, calls) != "pass" || grade(s, "wrong", calls) == "pass" || grade(s, s.Answer, calls[1:]) == "pass" {
+		t.Fatal("incorrect grading of durable reviewed skill evidence")
+	}
+}

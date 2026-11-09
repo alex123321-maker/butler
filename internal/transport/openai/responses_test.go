@@ -57,3 +57,19 @@ func TestLunaResponsesProfileAndToolTurn(t *testing.T) {
 		t.Fatal("invalid profile accepted")
 	}
 }
+
+func TestTerraMediumNativeProfile(t *testing.T) {
+	const model = "gpt-6.1-terra"
+	p, err := NewProvider(Config{Model: model, ReasoningEffort: "medium"}, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	b, err := p.responsesBody(map[string]any{"model": model})
+	var wire struct {
+		Reasoning struct{ Effort string }
+		Cap       int `json:"max_output_tokens"`
+	}
+	if err != nil || json.Unmarshal(b, &wire) != nil || wire.Reasoning.Effort != "medium" || wire.Cap != 8192 || p.prefersWebSocket() {
+		t.Fatal("missing bounded Terra medium Responses profile")
+	}
+}
