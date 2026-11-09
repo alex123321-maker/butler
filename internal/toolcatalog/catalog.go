@@ -78,39 +78,57 @@ func Decode(name, raw string) (Args, error) {
 	for keys.More() {
 		key, err := keys.Token()
 		if err != nil {
-			return a, err
+			return a, fmt.Errorf("catalog arguments must be valid JSON")
 		}
-		name, ok := key.(string)
-		if !ok || seen[name] {
+		field, ok := key.(string)
+		if !ok || seen[field] {
 			return a, fmt.Errorf("duplicate catalog argument")
 		}
-		seen[name] = true
+		switch field {
+		case "query", "category", "cursor", "limit":
+			if name != Search {
+				return a, fmt.Errorf("tools.load accepts only tool_refs")
+			}
+		case "tool_refs":
+			if name != Load {
+				return a, fmt.Errorf("tools.search accepts query, category, cursor and limit")
+			}
+		default:
+			return a, fmt.Errorf("use only fields from the catalog tool schema")
+		}
+		seen[field] = true
 		var value json.RawMessage
 		if err := keys.Decode(&value); err != nil {
-			return a, err
+			return a, fmt.Errorf("catalog arguments must be valid JSON")
+		}
+		if bytes.Equal(bytes.TrimSpace(value), []byte("null")) {
+			return a, fmt.Errorf("catalog arguments cannot be null")
 		}
 	}
 	if _, err := keys.Token(); err != nil {
-		return a, err
+		return a, fmt.Errorf("catalog arguments must be valid JSON")
 	}
 	d := json.NewDecoder(strings.NewReader(raw))
 	d.DisallowUnknownFields()
 	if err := d.Decode(&a); err != nil {
-		return a, err
+		return a, fmt.Errorf("catalog argument type does not match the tool schema")
 	}
 	if d.Decode(new(any)) != io.EOF {
 		return a, fmt.Errorf("trailing catalog arguments")
 	}
 	if name == Search {
-		if len(a.Query) > 256 || len(a.Category) > 64 || len(a.Cursor) > 128 || a.Limit < 0 || a.Limit > 8 || len(a.Refs) != 0 {
+		if seen["limit"] && (a.Limit < 1 || a.Limit > 8) {
+			return a, fmt.Errorf("limit must be an integer from 1 to 8, or omitted")
+		}
+		if len(a.Query) > 256 || len(a.Category) > 64 || len(a.Cursor) > 128 {
 			return a, fmt.Errorf("invalid search arguments")
 		}
-	} else if len(a.Refs) < 1 || len(a.Refs) > 8 || a.Query != "" || a.Category != "" || a.Cursor != "" || a.Limit != 0 {
-		return a, fmt.Errorf("invalid load arguments")
+	} else if len(a.Refs) < 1 || len(a.Refs) > 8 {
+		return a, fmt.Errorf("tool_refs must contain 1 to 8 references from tools.search")
 	}
 	for _, r := range a.Refs {
 		if len(r) > 512 || len(r) < 66 {
-			return a, fmt.Errorf("invalid tool reference")
+			return a, fmt.Errorf("use the exact tool_ref from a tools.search result")
 		}
 	}
 	return a, nil

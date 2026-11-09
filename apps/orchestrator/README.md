@@ -1,3 +1,6 @@
+Core returns catalog argument errors to the model as a known non-dispatch. A corrected tool call follows normal selection and authorization.
+
+
 Core also offers the separately configured, default-off
 [external Google diagnostic RP](../../docs/architecture/browser-google-auth.md).
 Only Core loads the private web-client file. A protected owner decision permits

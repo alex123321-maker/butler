@@ -18,6 +18,7 @@ import (
 	sessionv1 "github.com/butler/butler/internal/gen/session/v1"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 	"github.com/butler/butler/internal/singletabcontrol"
+	"github.com/butler/butler/internal/toolcatalog"
 	"github.com/butler/butler/internal/transport"
 )
 
@@ -92,6 +93,11 @@ func (s *Service) handleActionToolCall(ctx context.Context, runLog *slog.Logger,
 		return nil, current, fmt.Errorf("tool executor is not configured")
 	}
 	if approvalID == "" && !operatorDoctor(ctx) {
+		if s.config.ToolDiscoveryEnabled && toolcatalog.IsTool(requested.ToolName) {
+			if _, err := toolcatalog.Decode(requested.ToolName, requested.ArgsJSON); err != nil {
+				return s.rejectDraft(ctx, current, leaseID, requested, "invalid_catalog_arguments", err.Error())
+			}
+		}
 		sourceFeedback, err := s.communicationSourceFeedback(ctx, current, requested)
 		if err != nil {
 			return nil, current, err
