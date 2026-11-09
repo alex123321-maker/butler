@@ -28,6 +28,7 @@ type Candidate struct {
 	Effort   string `json:"reasoning_effort,omitempty"`
 }
 type Turn struct {
+	TabSelected    bool             `json:"owner_selected_fixture_tab,omitempty"`
 	Durations      []durationSample `json:"step_durations,omitempty"`
 	Started        time.Time        `json:"started_utc"`
 	Ended          time.Time        `json:"observed_utc"`
@@ -366,6 +367,7 @@ func (c *liveClient) turn(ctx context.Context, session, event string, step Step,
 				}
 				seen[pending] = true
 				selected = selected || s.guardedWait
+				t.TabSelected = selected
 			}
 			select {
 			case <-ctx.Done():

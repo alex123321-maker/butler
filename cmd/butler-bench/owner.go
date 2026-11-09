@@ -5,11 +5,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/butler/butler/internal/singletabcontrol"
 	"io"
 	"net/http"
 	"net/url"
 	"time"
+
+	"github.com/butler/butler/internal/singletabcontrol"
 )
 
 type ownerDecision struct {
@@ -35,6 +36,17 @@ type approvalReceipt struct {
 			URL   string `json:"current_url"`
 		} `json:"tab_candidates"`
 	} `json:"approval"`
+}
+
+// A definitive refusal or missing fixture leaves this input waiting. Other
+// enrolled sessions can proceed. An uncertain POST still stops collection.
+func isolatedOwnerFailure(reason string) bool {
+	switch reason {
+	case "owner_fixture_selection_conflict", "owner_fixture_fixture_tab_missing":
+		return true
+	default:
+		return false
+	}
 }
 
 func (c *liveClient) ownerRequest(ctx context.Context, method, path, delivery string, body []byte, result any) (int, error) {
@@ -98,6 +110,9 @@ func (c *liveClient) approve(ctx context.Context, s snapshot, session, event str
 		d.Confirmed = err == nil && d.Status == 200 && receipt.Session != ""
 		if !d.Confirmed {
 			d.Error = "selection_unconfirmed"
+			if d.Status == http.StatusConflict {
+				d.Error = "selection_conflict"
+			}
 		}
 		return
 	}
