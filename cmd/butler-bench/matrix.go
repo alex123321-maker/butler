@@ -22,7 +22,7 @@ const version = "butler-bench/1"
 
 // Include the evaluator and runner in the comparison identity.
 //
-//go:embed cases.go discovery.tsv grade.go live.go profile.go matrix.go report.go evidence.go timeline.sql replay.go
+//go:embed cases.go discovery.tsv grade.go owner.go live.go profile.go matrix.go report.go evidence.go timeline.sql replay.go
 var protocol embed.FS
 
 func digest(v any) string {

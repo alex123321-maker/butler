@@ -24,15 +24,17 @@ type Site struct {
 // Setup identifies the deployed code and the common non-model environment.
 // The read-only fixture answers stay in the evaluator.
 type Setup struct {
-	Commit        string             `json:"butler_commit"`
-	Environment   string             `json:"environment_sha256"`
-	Description   string             `json:"environment_description,omitempty"`
-	DisabledTools []string           `json:"disabled_tools,omitempty"`
-	Site          Site               `json:"site,omitempty"`
-	Memory        SourceFixture      `json:"memory,omitempty"`
-	Message       SourceFixture      `json:"message,omitempty"`
-	Skill         SkillFixture       `json:"skill,omitempty"`
-	Bindings      map[string]Binding `json:"bindings,omitempty"`
+	ApprovalPolicy string             `json:"approval_policy,omitempty"`
+	TabOrigin      string             `json:"fixture_tab_origin,omitempty"`
+	Commit         string             `json:"butler_commit"`
+	Environment    string             `json:"environment_sha256"`
+	Description    string             `json:"environment_description,omitempty"`
+	DisabledTools  []string           `json:"disabled_tools,omitempty"`
+	Site           Site               `json:"site,omitempty"`
+	Memory         SourceFixture      `json:"memory,omitempty"`
+	Message        SourceFixture      `json:"message,omitempty"`
+	Skill          SkillFixture       `json:"skill,omitempty"`
+	Bindings       map[string]Binding `json:"bindings,omitempty"`
 }
 
 type SourceFixture struct {

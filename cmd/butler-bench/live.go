@@ -55,6 +55,8 @@ type Turn struct {
 }
 
 type liveClient struct {
+	approveOwner    bool
+	tabOrigin       string
 	endpoint, token string
 	http            *http.Client
 	db              *pgxpool.Pool
@@ -150,6 +152,7 @@ func (c *liveClient) submit(ctx context.Context, session, event string, step Ste
 }
 
 type snapshot struct {
+	approvalID                                              string
 	guardedWait                                             bool
 	status, run, errorCode, answer, answerState, answerHash string
 	redacted, webReady                                      bool
@@ -167,14 +170,14 @@ func (c *liveClient) observe(ctx context.Context, session, event, id, task strin
 		return s, err
 	}
 	defer tx.Rollback(ctx)
-	err = tx.QueryRow(ctx, `SELECT i.status,COALESCE(i.run_id,''),i.error_code,
+	err = tx.QueryRow(ctx, `SELECT i.status,COALESCE(i.run_id,''),i.error_code,COALESCE(i.checkpoint_json->>'approval_id',''),
         COALESCE(f.content,''),COALESCE(f.answer_state,''),COALESCE(f.content_hash,''),COALESCE(f.privacy_redacted,false),
         EXISTS(SELECT 1 FROM delivery_outbox d WHERE d.result_id=f.result_id AND d.run_id=i.run_id AND d.session_key=i.session_key AND d.channel='web' AND d.status='result_ready')
         FROM accepted_inputs i LEFT JOIN runs r ON r.run_id=i.run_id AND r.session_key=i.session_key
         LEFT JOIN run_final_results f ON f.run_id=r.run_id AND f.session_key=r.session_key
         WHERE i.input_id=$1 AND i.event_id=$2 AND i.session_key=$3 AND i.source='web'
           AND ($4='' OR i.task_id=$4 AND (f.result_id IS NULL OR f.task_id=$4))
-          AND (i.run_id IS NULL OR r.run_id IS NOT NULL)`, id, event, session, task).Scan(&s.status, &s.run, &s.errorCode, &s.answer, &s.answerState, &s.answerHash, &s.redacted, &s.webReady)
+          AND (i.run_id IS NULL OR r.run_id IS NOT NULL)`, id, event, session, task).Scan(&s.status, &s.run, &s.errorCode, &s.approvalID, &s.answer, &s.answerState, &s.answerHash, &s.redacted, &s.webReady)
 	if err != nil || s.run == "" {
 		return s, err
 	}
@@ -243,7 +246,7 @@ func verdict(s snapshot, step Step) string {
 	if s.attempts > 0 && !s.matched {
 		return "model_mismatch"
 	}
-	if step.Rule == "guarded_wait" && s.status == "waiting_for_user" && s.attempts > 0 && s.guardedWait && s.answerState == "" {
+	if step.Rule == "guarded_wait" && s.attempts > 0 && s.guardedWait && ((s.status == "waiting_for_user" && s.answerState == "") || (s.status == "completed" && s.webReady && s.answerState == "final")) {
 		for _, c := range s.calls {
 			if c.Name != "tools.search" && c.Name != "tools.load" && c.Name != "single_tab.bind.guarded" {
 				return "unexpected_tool"
@@ -285,6 +288,9 @@ func (c *liveClient) turn(ctx context.Context, session, event string, step Step,
 	start := time.Now()
 	t.Started = start.UTC()
 	var grading *observation
+	var decisions []ownerDecision
+	seen := make(map[string]bool)
+	selected := false
 	defer func() {
 		end := time.Now()
 		t.Ended = end.UTC()
@@ -293,6 +299,12 @@ func (c *liveClient) turn(ctx context.Context, session, event string, step Step,
 			if err := writeJSON(filepath.Join(dir, "grading.json"), grading); err != nil {
 				t.ObservedResult = t.Reason
 				t.Reason = "grading_write_failed"
+			}
+		}
+		if len(decisions) > 0 {
+			if err := writeJSON(filepath.Join(dir, "owner-decisions.json"), decisions); err != nil {
+				t.ObservedResult = t.Reason
+				t.Reason = "owner_evidence_write_failed"
 			}
 		}
 		// A timed-out or cancelled run still needs its last available evidence.
@@ -329,7 +341,29 @@ func (c *liveClient) turn(ctx context.Context, session, event string, step Step,
 			}
 			return
 		}
+		if selected && s.status == "completed" {
+			s.guardedWait = true
+		}
 		s.fill(&t)
+		if c.approveOwner && s.status == "waiting_for_user" && s.approvalID != "" {
+			if !seen[s.approvalID] {
+				d := c.approve(ctx, s, session, event)
+				decisions = append(decisions, d)
+				if !d.Confirmed {
+					t.Reason = "owner_fixture_" + d.Error
+					return
+				}
+				seen[s.approvalID] = true
+				selected = selected || s.guardedWait
+			}
+			select {
+			case <-ctx.Done():
+				t.Reason = "timeout"
+				return
+			case <-ticker.C:
+				continue
+			}
+		}
 		if reason := verdict(s, step); reason != "" {
 			t.Reason = reason
 			if !s.redacted {
