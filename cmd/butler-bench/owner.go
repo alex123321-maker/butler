@@ -24,11 +24,16 @@ type ownerDecision struct {
 }
 type approvalReceipt struct {
 	Approval struct {
-		ID      string `json:"approval_id"`
-		Run     string `json:"run_id"`
-		Session string `json:"session_key"`
-		Tool    string `json:"tool_name"`
-		Status  string `json:"status"`
+		ID         string `json:"approval_id"`
+		Run        string `json:"run_id"`
+		Session    string `json:"session_key"`
+		Tool       string `json:"tool_name"`
+		Status     string `json:"status"`
+		Type       string `json:"approval_type"`
+		Candidates []struct {
+			Token string `json:"candidate_token"`
+			URL   string `json:"current_url"`
+		} `json:"tab_candidates"`
 	} `json:"approval"`
 }
 
@@ -109,11 +114,73 @@ func (c *liveClient) approve(ctx context.Context, s snapshot, session, event str
 		d.Confirmed = true
 		return
 	}
+	action := "/approve"
+	var body []byte
+	if current.Approval.Type == "browser_tab_selection" {
+		d.Kind = "select_tab"
+		for _, candidate := range current.Approval.Candidates {
+			u, e := url.Parse(candidate.URL)
+			if e == nil && u.User == nil && u.Scheme+"://"+u.Host == c.tabOrigin && candidate.Token != "" {
+				body, _ = json.Marshal(map[string]string{"candidate_token": candidate.Token})
+				break
+			}
+		}
+		if body == nil {
+			d.Error = "fixture_tab_missing"
+			return
+		}
+		action = "/select-tab"
+	}
 	var receipt approvalReceipt
-	d.Status, err = c.ownerRequest(ctx, http.MethodPost, path+"/approve", delivery, nil, &receipt)
+	d.Status, err = c.ownerRequest(ctx, http.MethodPost, path+action, delivery, body, &receipt)
 	d.Confirmed = err == nil && receipt.Approval.ID == d.ID && receipt.Approval.Run == s.run && receipt.Approval.Session == session && receipt.Approval.Status == "approved"
 	if !d.Confirmed {
 		d.Error = "approval_unconfirmed"
 	}
+	return
+}
+
+// An unresolved effect is a request for factual evidence, distinct from
+// permission to perform an action. Never manufacture a recipient receipt.
+func (c *liveClient) reportUnknown(ctx context.Context, s snapshot, event string) (d ownerDecision) {
+	start := time.Now()
+	d = ownerDecision{ID: s.reviewID, Started: start.UTC(), Kind: "report_unknown_effect"}
+	defer func() { d.DurationUS = time.Since(start).Microseconds() }()
+	const path = "/api/v4/action-outcomes"
+	var pending struct {
+		Reviews []struct {
+			ID          string `json:"review_id"`
+			Run         string `json:"run_id"`
+			Revision    int64  `json:"revision"`
+			Fingerprint string `json:"fingerprint"`
+		} `json:"reviews"`
+	}
+	delivery := event + "-" + s.reviewID
+	code, err := c.ownerRequest(ctx, http.MethodGet, path, delivery, nil, &pending)
+	d.Status = code
+	if err != nil || code != 200 {
+		d.Error = "effect_review_unavailable"
+		return
+	}
+	for _, row := range pending.Reviews {
+		if row.ID != s.reviewID || row.Run != s.run {
+			continue
+		}
+		body, _ := json.Marshal(map[string]any{"action": "report", "decision": map[string]any{"review_id": row.ID, "revision": row.Revision, "fingerprint": row.Fingerprint, "outcome": "unknown"}})
+		var receipt struct {
+			Review struct {
+				ID    string `json:"review_id"`
+				Run   string `json:"run_id"`
+				State string `json:"state"`
+			} `json:"review"`
+		}
+		d.Status, err = c.ownerRequest(ctx, http.MethodPost, path, delivery, body, &receipt)
+		d.Confirmed = err == nil && d.Status == 200 && receipt.Review.ID == s.reviewID && receipt.Review.Run == s.run && receipt.Review.State == "unresolved"
+		if !d.Confirmed {
+			d.Error = "effect_review_unconfirmed"
+		}
+		return
+	}
+	d.Error = "effect_review_identity_unconfirmed"
 	return
 }

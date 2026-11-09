@@ -152,6 +152,7 @@ func (c *liveClient) submit(ctx context.Context, session, event string, step Ste
 }
 
 type snapshot struct {
+	reviewID                                                string
 	approvalID                                              string
 	guardedWait                                             bool
 	status, run, errorCode, answer, answerState, answerHash string
@@ -170,14 +171,15 @@ func (c *liveClient) observe(ctx context.Context, session, event, id, task strin
 		return s, err
 	}
 	defer tx.Rollback(ctx)
-	err = tx.QueryRow(ctx, `SELECT i.status,COALESCE(i.run_id,''),i.error_code,COALESCE(i.checkpoint_json->>'approval_id',''),
+	err = tx.QueryRow(ctx, `SELECT i.status,COALESCE(i.run_id,''),i.error_code,CASE WHEN i.checkpoint='awaiting_approval' THEN COALESCE(i.checkpoint_json->>'approval_id','') ELSE '' END,
+        CASE WHEN i.checkpoint='awaiting_interaction' AND i.checkpoint_json->'interaction'->>'kind'='effect_review' THEN COALESCE(i.checkpoint_json->'interaction'->>'interaction_id','') ELSE '' END,
         COALESCE(f.content,''),COALESCE(f.answer_state,''),COALESCE(f.content_hash,''),COALESCE(f.privacy_redacted,false),
         EXISTS(SELECT 1 FROM delivery_outbox d WHERE d.result_id=f.result_id AND d.run_id=i.run_id AND d.session_key=i.session_key AND d.channel='web' AND d.status='result_ready')
         FROM accepted_inputs i LEFT JOIN runs r ON r.run_id=i.run_id AND r.session_key=i.session_key
         LEFT JOIN run_final_results f ON f.run_id=r.run_id AND f.session_key=r.session_key
         WHERE i.input_id=$1 AND i.event_id=$2 AND i.session_key=$3 AND i.source='web'
           AND ($4='' OR i.task_id=$4 AND (f.result_id IS NULL OR f.task_id=$4))
-          AND (i.run_id IS NULL OR r.run_id IS NOT NULL)`, id, event, session, task).Scan(&s.status, &s.run, &s.errorCode, &s.approvalID, &s.answer, &s.answerState, &s.answerHash, &s.redacted, &s.webReady)
+          AND (i.run_id IS NULL OR r.run_id IS NOT NULL)`, id, event, session, task).Scan(&s.status, &s.run, &s.errorCode, &s.approvalID, &s.reviewID, &s.answer, &s.answerState, &s.answerHash, &s.redacted, &s.webReady)
 	if err != nil || s.run == "" {
 		return s, err
 	}
@@ -345,15 +347,24 @@ func (c *liveClient) turn(ctx context.Context, session, event string, step Step,
 			s.guardedWait = true
 		}
 		s.fill(&t)
-		if c.approveOwner && s.status == "waiting_for_user" && s.approvalID != "" {
-			if !seen[s.approvalID] {
-				d := c.approve(ctx, s, session, event)
+		pending := s.approvalID
+		if s.reviewID != "" {
+			pending = s.reviewID
+		}
+		if c.approveOwner && s.status == "waiting_for_user" && pending != "" {
+			if !seen[pending] {
+				var d ownerDecision
+				if s.reviewID != "" {
+					d = c.reportUnknown(ctx, s, event)
+				} else {
+					d = c.approve(ctx, s, session, event)
+				}
 				decisions = append(decisions, d)
 				if !d.Confirmed {
 					t.Reason = "owner_fixture_" + d.Error
 					return
 				}
-				seen[s.approvalID] = true
+				seen[pending] = true
 				selected = selected || s.guardedWait
 			}
 			select {
