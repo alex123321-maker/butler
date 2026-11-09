@@ -72,3 +72,20 @@ func TestOutcomeEquivalentHTMLAndAcknowledgement(t *testing.T) {
 		t.Fatal("ack scope")
 	}
 }
+func TestDocumentReadUsesAcquiredContent(t *testing.T) {
+	s := Step{Rule: "site_read", Target: "https://fixture.example/read", Answer: "CODE", Witness: "CODE", Allowed: []string{"web.extract", "http.request", "web.fetch"}}
+	c := call{Name: "web.extract", Status: "completed", Args: json.RawMessage(`{"url":"https://fixture.example/read"}`), Result: json.RawMessage(`{"content_text":"reference CODE"}`)}
+	if grade(s, "CODE", []call{c}) != "pass" {
+		t.Fatal("URL-based extract rejected")
+	}
+	c.Args = json.RawMessage(`{"url":"https://fixture.example/read","html":"CODE"}`)
+	if grade(s, "CODE", []call{c}) == "pass" {
+		t.Fatal("inline answer credited")
+	}
+	c.Name = "http.request"
+	c.Args = json.RawMessage(`{"method":"POST","url":"https://fixture.example/read"}`)
+	c.Result = json.RawMessage(`{"body":"CODE"}`)
+	if grade(s, "CODE", []call{c}) == "pass" {
+		t.Fatal("mutating request credited")
+	}
+}
