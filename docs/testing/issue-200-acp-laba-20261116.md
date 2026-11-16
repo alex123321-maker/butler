@@ -19,32 +19,36 @@ and64KiB. Each prompt spends a permanent reservation; native token observations
 remain NULL. Opaque prompt limits remain strict even when the old native
 conversation-turn opt-out is enabled. No paid/native foreground fallback exists.
 
-Background memory remains explicitly configured on its previously qualified
-native Flash High32768/300s profile through `BUTLER_MEMORY_MODEL_PROVIDER`.
-Candidate/summary/consolidation/temporal capabilities must not silently disappear
-when foreground changes. ACP does not inherit their native quality qualification.
-This is an independent configured backend, not inference retry/fallback.
+Background memory now explicitly selects `BUTLER_MEMORY_MODEL_PROVIDER=antigravity-acp`
+and exact Flash after separate ACP candidate/summary/consolidation qualification.
+Its observed primary worker publication is recorded below. ACP does not inherit
+native cost/latency gates; Experience remains unqualified. Native memory was the
+earlier explicit backend and remains an operator-selected rollback alternative,
+not an automatic inference fallback.
 
 ## Source and artifacts
 
 Source worktree: `D:/Repository/butler/.cache/worktrees/acp-200`.
-Base: `9ed43643e1f13654956bbb1ba79fe8be0e578fb6`; feature changes are uncommitted.
-The primary checkout and its unrelated `prototypes/` were preserved. No PR,
-commit or merge was created by this work.
+Base: `9ed43643e1f13654956bbb1ba79fe8be0e578fb6`; implementation commit
+`2d1bfcad` on `codex/issue-200-gemini-acp`. The base includes an unpublished
+catalog argument-validation prerequisite above origin/main `ee05d92d`.
+The primary checkout and its unrelated `prototypes/` were preserved. Publication
+status is tracked in issue200; the implementation has not been merged into main.
 
 Primary release: `/srv/storage/butler/main/releases/gemini-acp-20261116-200`.
-Final effective configuration is its private `candidate.v6.compose.json`.
+Final effective configuration is its private `candidate.v9.compose.json`.
 The operator pointer is `/srv/storage/butler/main/acp-active.compose.path`.
-`source-final.tar.gz` is the final source snapshot; its digest is stored in the
-private acceptance receipt. The older extracted `source/` directory belongs to
-migration staging and must not be used as the final build source.
+`source-final.tar.gz` is the earlier v6 snapshot, not the current Core source.
+Subsequent task-history and ACP-memory artifacts have separate private release
+receipts and the implementation commit above. The older extracted `source/`
+directory belongs to migration staging and must not be used as final source.
 The original normalized configuration is retained as private `before.compose.json`;
 the original native release and its credentials/profile remain available.
 Application rollback retains migration112 and all attempts/spending/UNKNOWN.
 
 | Artifact | SHA-256 / image identity |
 |---|---|
-| Core `core-budget-final/orchestrator` | `4dbadec5599a61383835384ea35b34545f1ac2bd319d67197e9c968710441293` |
+| Current Core | `e0238e3cb724ac0ca07b0edb45b53a569b454dfcb6b7b744a30a2f8cbd5fffc8` |
 | Broker `broker-final/broker` | `0d8da4cae05a2bb82c5452ccd4fd50a9c1d7c2b32c917f0a360c823cde4ffef7` |
 | Isolated runtime image | `sha256:ee2b5f0d0317c478a4159e769816db2945fc252ef33ff97b1ae6b4a916c40dde` |
 | Web output archive | `7dab20ce23f5873851d9306b32ff073e9ce165ac1bc031951dd12987b3c06b18` |
@@ -119,9 +123,10 @@ frozen native-history prerequisites reported earlier were not replaced.
 - Automatic review rejected deletion of the local T3 protected-code file with
   `blocked by policy`. The one-use code was consumed successfully; temporary
   copies on laba were removed. No code/token/raw CLI log was printed.
-- No primary live browser/credential/schedule/delegation/revocation matrix is
-  inferred from message/Web success. Vision, streaming and tool batches are not
-  advertised. Background generation through ACP still needs its own quality gate.
+- Extended browser, schedule, credential, memory and delegation evidence is
+  recorded below with primary/isolated boundaries. Positive primary delegation
+  remains untested under the existing zero-child policy. Vision, streaming and
+  tool batches are not advertised.
 - Google entitlement/quota and consumer-account terms remain separate from
   transport success; no account rotation, identity disguise or ban guarantee.
 - Disk headroom on laba is critically low: approximately250MiB on `/` and534MiB
@@ -191,8 +196,9 @@ Production private-egress rules and Google profiles were not changed/copied.
 - The first ACP summary was published through sequence8. Its second request
   timed out at300s; the prior valid checkpoint, raw transcript and conservative
   spending were retained. That window is **failed**, not qualified. A separately
-  capped recovery experiment is tracked independently. Primary background memory
-  still explicitly uses native Antigravity until its own qualification completes.
+  capped recovery experiment is tracked independently. At that stage primary
+  background memory still used native Antigravity; the later activation below
+  followed the separate ACP qualification.
 
 Targeted PostgreSQL regression checks for shared final budget, pause, priority,
 publication rollback, migration-history retention, repeated compaction, late
@@ -231,7 +237,8 @@ then deployed on primary laba: both foreground and memory backend are now
 `antigravity-acp`, exact `gemini-3.8-flash`. Effective configuration is
 `private/candidate.v8.compose.json`, Core SHA256
 `e0238e3cb724ac0ca07b0edb45b53a569b454dfcb6b7b744a30a2f8cbd5fffc8`.
-The v7 native-memory configuration remains the immediate rollback target.
+The v7 native-memory configuration remains a Core rollback alternative; retain
+the v9 runtime profile storage mount when rolling back (see below).
 Broker/runtime/proxy/communication profile were unchanged. A quiescent before/
 after checksum verified identical pre-existing budget limits, deadlines and
 spending. There were zero existing model-memory policies to reinterpret.
@@ -256,3 +263,45 @@ acceptance. The local recipient/credentials were synthetic; primary public
 browsing, scheduled delivery and background generation were separately observed.
 Positive primary child execution is still prohibited by the existing zero child
 budget. The isolated positive delegation does not bypass or alter that policy.
+
+## Profile storage and final primary smoke
+
+After background activation, foreground input
+`input-96aae5c5275d4c3151719e4293f9b26c`, run
+`run-1794813369011187985-d95be252b4a26a4d`, failed with
+`provider_protocol_error`. Its one opaque attempt and NULL usage remain stored;
+no tool or publication ran. Root filesystem available space was zero. The
+private ACP profile used about92.7MiB on Docker's root filesystem. Raw CLI logs
+were not inspected, so the precise internal CLI failure is not established.
+
+With no active foreground or memory claims, only Core and the ACP runtime were
+stopped. The profile was copied on the same laba host to
+`/srv/storage/butler/main/acp-profile`, keeping UID10001 and private modes.
+Aggregate file-content hashes matched before activation. No Google profile or
+credential was copied between PC and laba. The runtime image, internal `/profile`,
+Google login, Core binary, budget configuration and proxy were unchanged.
+`private/candidate.v9.compose.json` now bind-mounts this private storage path;
+`private/profile-storage-migration.json` records the checks. The original private
+Docker volume remains available for rollback; no unrelated data was removed.
+
+New input `input-07b745456cdcf59cd11614e18f3cf183`, run
+`run-1794814857669519723-60ffe9f2c2295cf7`, completed after relocation.
+`communication.message` completed, Web is `result_ready` and Telegram is `sent`
+with ACK for `ACP_STORAGE_OK_001: 60`. Both ACP attempts retain NULL token usage.
+Receipt: `private/post-storage-001.observed.json`. The one-use primary background
+test policy remains revoked, with its result and spending preserved.
+
+Subsequent read-only observation found approximately184MiB free on `/` and326MiB
+on `/srv/storage`; both report100% used. This is still critically low headroom,
+not a repaired global disk condition. Issue201 remains open. UID10001 needs
+writable free space on the profile filesystem, even with a read-only container
+root. A default Docker named volume uses Docker's data filesystem. Do not
+blindly recreate the runtime using v7/v8's stale original profile volume on the
+full root partition: roll back only Core with `--no-deps orchestrator`, or retain
+the v9 profile mount and current private profile.
+
+All local acceptance containers were stopped after evidence backup. A real
+dump/restore of the final memory cohort into a fresh persistent test database
+retained39 attempts,39 NULL usages,35 publications,39 permanent reservations and
+owner-day spending39/40. Restarting the old tmpfs test container is not proof of
+history retention; use the saved dump or its persistent restored database.

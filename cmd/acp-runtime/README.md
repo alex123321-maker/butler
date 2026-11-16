@@ -35,6 +35,21 @@ The owner supplies the code through a private mode0600 one-use file selected by
 `-login-code-file` (default `/tmp/login-code`); the file is removed after reading.
 Stop inference before login and do not copy tokens from T3/native/desktop homes.
 
+The private `/profile` mount must be writable by UID10001 and have free bytes
+and inodes. The read-only container root does not remove the CLI's profile-write
+requirement. A default Docker named volume resides on Docker's data filesystem;
+check that filesystem separately from release storage. Monitor headroom before
+login, deployment and inference. Never print profile contents or raw CLI logs
+while diagnosing storage failures.
+
+For a same-host profile relocation, wait for foreground and memory claims to
+finish, stop Core and the runtime, preserve private ownership/modes, compare
+file-content hashes, and retain the old private volume for rollback. Activate
+the new mount with the same image/internal path and verify a real Butler request
+and channel delivery. Old Compose files may point at a stale profile; retain
+the active mount when rolling back Core. Such relocation does not fix global
+disk exhaustion or authorize deleting other services' data.
+
 The Compose overlay is `deploy/docker-compose.acp.yml`. It requires the separate
 `subscription_agent_no_overage` exact provider/model budget policy in both Core
 and Broker. Token counts and internal Google model-call counts remain unknown;
