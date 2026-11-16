@@ -1,5 +1,13 @@
 # Butler — Tooling and Execution Specification
 
+The optional [ACP model runtime](antigravity-acp-adr.md) is a model-transport
+sidecar, not a Tool Broker runtime target. It owns only the dedicated official
+Google CLI profile and private protocol socket. Native tools/MCP/plugins/skills
+and subagents are disabled; tool activity/permission RPCs abort the turn.
+Strict logical proposals return to Core and use ordinary Broker policy,
+credential references, effect journals and current authority. The sidecar has
+no Butler service credential, host workspace, Docker socket or arbitrary egress.
+
 The [browser network foundation](browser-network-contract.md) bounds private
 proxy concurrency, lifetime admissions and cumulative HTTP/CONNECT responses.
 SSE proxy flushing retains preparation freeze and independent byte accounting;

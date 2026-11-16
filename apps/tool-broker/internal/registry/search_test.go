@@ -2,6 +2,7 @@ package registry
 
 import (
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
+	"github.com/butler/butler/internal/toolcatalog"
 	"testing"
 )
 
@@ -26,5 +27,17 @@ func TestSearchValidatesBoundsAndFixedProviderDestinationBeforeDispatch(t *testi
 		if valid != tc.valid {
 			t.Fatal(tc, valid, failure)
 		}
+	}
+}
+
+func TestCatalogLimitRejectedBeforeActionPreparation(t *testing.T) {
+	r := &Registry{toolsByName: map[string]*toolbrokerv1.ToolContract{toolcatalog.Search: toolcatalog.Contract(toolcatalog.Search)}}
+	call := &toolbrokerv1.ToolCall{ToolName: toolcatalog.Search, ArgsJson: `{"limit":10}`}
+	if ok, _, failure := r.Validate(call); ok || failure.GetMessage() == "" {
+		t.Fatal("invalid call passed broker validation")
+	}
+	call.ArgsJson = `{"limit":8}`
+	if ok, _, failure := r.Validate(call); !ok {
+		t.Fatal(failure)
 	}
 }

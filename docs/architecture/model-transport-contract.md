@@ -1,5 +1,21 @@
 # Butler — Model Transport Contract
 
+The default-off [Antigravity ACP adapter](antigravity-acp-adr.md) uses an isolated
+official Google runtime over a private Unix socket. Core retains ownership of
+context, authority, budgets, tools, effects and delivery. The runtime returns
+strict answer/tool-proposal JSON and does not execute Butler tools. Native
+tools, skills, plugins and delegation are disabled in its managed agent/profile.
+Each prompt replays the current Butler context into a fresh ACP session.
+
+The owner approved a separate opaque subscription budget on2026-11-16.
+`subscription_agent_no_overage` must be declared for the exact provider/model;
+missing policy still denies dispatch. One reservation covers one ACP prompt,
+bounded wall time and Butler input/output data, not a claimed count of internal
+Google inferences. Native token usage remains unknown/NULL. The adapter does not
+advertise fabricated `InferenceLimits`, and token-metered providers retain their
+existing rules. See the [budget contract](execution-budget-contract.md) and
+[runtime boundary](../../cmd/acp-runtime/README.md).
+
 An explicitly enrolled [benchmark request](../../cmd/butler-bench/README.md)
 can record the normalized input items, tool definitions, continuation data,
 visible outputs, reported usage/version and observed provider stage timings
@@ -115,7 +131,9 @@ input/output/time before each actual inference request. Exact operator cost basi
 and current assigned privacy policy are required. Private
 `transport.WithInputByteLimit` constrains complete native serialized history and
 tool declarations before HTTP write; unset cap is finite. Native Antigravity
-declares inference limits; undeclared adapters fail closed in admitted production
+declares inference limits; explicitly selected opaque ACP declares agent
+execution limits and uses its separately qualified memory profile. Other
+undeclared adapters fail closed in admitted production
 execution. No automatic model fallback or overage follows from a budget quote.
 
 Execution failure diagnostics retain the general `transport_error` run class and

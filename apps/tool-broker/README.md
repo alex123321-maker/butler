@@ -1,5 +1,8 @@
 # Tool Broker
 
+Broker checks the catalog argument decoder before action preparation, including the declared search limit and load reference constraints.
+
+
 External-login mediation passes the trusted permanent effect ID/fingerprint
 separately from the execution's Run/call identity. A composed Broker/PG logical
 slot test checks this distinction, the metadata acknowledgement and the absence

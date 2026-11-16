@@ -18,7 +18,10 @@ type AuxiliaryIdentity struct {
 	InputBytes, Tokens, ActiveMillis               int64
 	// Quote is supplied by the trusted generative adapter after ModelQuote.
 	// Nil preserves the existing local auxiliary contract.
-	Quote          *Units
+	Quote *Units
+	// Agent is trusted composition metadata for the explicit opaque subscription
+	// path. Zero token capacity alone never selects this mode.
+	Agent          *ModelAllowance
 	PolicyID       string
 	PolicyLimits   Units
 	PolicyDeadline time.Time
@@ -30,8 +33,22 @@ type AuxiliaryIdentity struct {
 type AuxiliaryTaskIdentity struct{ TaskID, MandateID string }
 
 func (c *Controller) ReserveAuxiliaryTx(ctx context.Context, tx pgx.Tx, i AuxiliaryIdentity) (ModelAdmission, error) {
-	if i.OwnerID == "" || i.JobID == "" || i.OperationID == "" || i.InputBytes < 1 || i.Tokens < 1 || i.ActiveMillis < 1 || len(i.AdditionalTasks) > 8 || len(i.AdditionalTasks) > 0 && (i.TaskID != "" || i.MandateID != "") {
+	if i.OwnerID == "" || i.JobID == "" || i.OperationID == "" || i.InputBytes < 1 || i.Tokens < 0 || i.Tokens == 0 && i.Agent == nil || i.ActiveMillis < 1 || len(i.AdditionalTasks) > 8 || len(i.AdditionalTasks) > 0 && (i.TaskID != "" || i.MandateID != "") {
 		return ModelAdmission{}, ErrInvalid
+	}
+	if i.Agent != nil {
+		if !i.Agent.Agent || i.Agent.Validate(c.Policy) != nil || i.Quote == nil || i.Tokens != 0 {
+			return ModelAdmission{}, ErrInvalid
+		}
+		p := c.Policy
+		if p.ModelMillis > 300000 {
+			p.ModelMillis = 300000
+		}
+		quote, err := p.AgentQuote(i.Agent.Provider, i.Agent.Model)
+		if err != nil || quote != *i.Quote || quote.ProviderInputBytes != i.InputBytes || quote.ActiveMillis != i.ActiveMillis {
+			return ModelAdmission{}, ErrInvalid
+		}
+		ctx = context.WithValue(ctx, opaquePromptAdmissionKey{}, true)
 	}
 	var now time.Time
 	if e := tx.QueryRow(ctx, `SELECT clock_timestamp()`).Scan(&now); e != nil {
@@ -109,5 +126,5 @@ func (c *Controller) ReserveAuxiliaryTx(ctx context.Context, tx pgx.Tx, i Auxili
 	if i.Deadline.Before(deadline) {
 		deadline = i.Deadline
 	}
-	return ModelAdmission{OperationID: i.OperationID, Deadline: deadline, ReservationID: r.ID}, nil
+	return ModelAdmission{OperationID: i.OperationID, Deadline: deadline, ReservationID: r.ID, Agent: i.Agent != nil}, nil
 }

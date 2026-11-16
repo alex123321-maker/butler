@@ -1,3 +1,26 @@
+Core returns catalog argument errors to the model as a known non-dispatch. A corrected tool call follows normal selection and authorization.
+
+The experimental `antigravity-acp` factory adapter has separate operator-only
+runtime configuration and defaults off. It proposes tools through the normal
+kernel without importing existing native-provider tokens. It uses a private
+Unix socket; Google CLI credentials/executable/workspace are not mounted in Core.
+Dispatch requires the explicit request/time/data subscription-agent budget;
+native usage stays unknown. The optional isolated runtime Compose overlay and
+official login are separate from production acceptance. See the [adapter contract](../../internal/transport/antigravityacp/README.md)
+and [acceptance gates](../../docs/architecture/antigravity-acp-adr.md).
+
+Native-qualified background memory consumers use an explicit independent
+`BUTLER_MEMORY_MODEL_PROVIDER=antigravity` when foreground is ACP. Their measured
+High32768/300s profile and native budget basis remain required. No foreground
+request falls back to native; missing explicit memory selection refuses startup.
+
+The independently checked exact ACP Flash300s profile is now another explicit
+`BUTLER_MEMORY_MODEL_PROVIDER=antigravity-acp` choice for candidates, summaries,
+consolidation and their normal readers. It requires the opaque subscription
+basis and matching declared byte/time bounds. Existing token-mode policies wait
+visibly; new policies explicitly request `accounting_mode:opaque_subscription`.
+Native performance/cost comparisons and experience qualification are not inherited.
+
 Core also offers the separately configured, default-off
 [external Google diagnostic RP](../../docs/architecture/browser-google-auth.md).
 Only Core loads the private web-client file. A protected owner decision permits
@@ -347,6 +370,12 @@ resume the remaining original task; they do not establish semantic verification
 or authorize replaying activation. Candidate collection/checking remains its
 separate earlier phase.
 # Orchestrator
+
+Scheduled tasks use task-scoped transcript history so an old, long shared chat
+cannot exhaust a new occurrence's context budget. Own attempts, UNKNOWN outcomes
+and exact owner interactions remain visible under the existing revision/privacy
+guards. Foreground provider selection does not qualify background consumers;
+their independently selected backend and explicit accounting policy still apply.
 
 The explicit owner profile installs metadata-only communication diagnostics in
 Web and Doctor, probes pinned Broker schemas and exposes durable channel/obligation/
@@ -1008,8 +1037,9 @@ model cost basis is required. Exhaustion/loops persist a blocked continuation an
 concrete reason, cancel transport and never create a verified result. Frozen
 finalization does not reserve another model turn. Owner-proved
 `GET /api/v3/execution-budgets` exposes conservative reservations separately from
-actual usage. Native Antigravity currently declares inference limits; undeclared
-adapters and all batches fail closed. See
+actual usage. Native Antigravity declares inference limits; explicitly configured
+ACP uses its opaque request/time/data admission and declared agent bounds.
+Other undeclared adapters and all batches fail closed. See
 [execution budgets](../../docs/architecture/execution-budget-contract.md).
 
 Authenticated owner goals and broad autonomy are available at `/goals` and the

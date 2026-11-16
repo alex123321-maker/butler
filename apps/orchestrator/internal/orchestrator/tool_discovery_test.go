@@ -343,3 +343,34 @@ func TestToolDiscoveryExplicitReplySchemaIsAvailableWithoutCatalogRoundTrips(t *
 		t.Fatal("unpermitted reply invented", selected, err)
 	}
 }
+
+func TestToolDiscoveryCorrectsInvalidLimitBeforePreparation(t *testing.T) {
+	ctx := context.Background()
+	contracts := toolcatalog.Contracts()
+	authority := &discoveryFlowAuthorizer{contracts: contracts}
+	tools := &discoveryFlowTools{contracts: contracts}
+	history := &memoryTranscriptStore{}
+	provider := &mockProvider{}
+	runs := newMemoryRunManager()
+	current := &sessionv1.RunRecord{RunId: "run", SessionKey: "session", CurrentState: commonv1.RunState_RUN_STATE_MODEL_RUNNING, LeaseId: "lease"}
+	runs.records["run"] = current
+	s := newFixtureService(nil, nil, runs, history, provider, Config{ToolDiscoveryEnabled: true, ToolCatalog: &recoveryCatalog{contracts: contracts}, Tools: tools, ActionAuthorizer: authority}, nil)
+	request := &transport.ToolCallRequest{ToolCallRef: "bad", ToolName: toolcatalog.Search, ArgsJSON: `{"limit":10}`}
+	_, current, err := s.handleToolCall(ctx, s.log, current, "lease", request)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if authority.prepared != 0 || authority.authorized != 0 || len(tools.calls) != 0 || len(history.toolCalls) != 1 || history.toolCalls[0].Status != "validation_rejected" {
+		t.Fatal("invalid proposal reached dispatch or lost its rejection")
+	}
+	if len(provider.submittedResults) != 1 || provider.submittedResults[0].ToolCallRef != "bad" || !strings.Contains(history.toolCalls[0].ResultJSON, "1 to 8") {
+		t.Fatal("missing correlated correction")
+	}
+	request = &transport.ToolCallRequest{ToolCallRef: "fixed", ToolName: toolcatalog.Search, ArgsJSON: `{"limit":8}`}
+	if _, _, err = s.handleToolCall(ctx, s.log, current, "lease", request); err != nil {
+		t.Fatal(err)
+	}
+	if authority.prepared != 1 || authority.authorized != 1 || len(tools.calls) != 1 || tools.calls[0].ToolCallId != "fixed" {
+		t.Fatal("corrected proposal did not pass ordinary authorization")
+	}
+}

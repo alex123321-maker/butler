@@ -37,6 +37,9 @@ func configureModelJobs(c *catalog.Store, b *budget.Controller, p providerfactor
 }
 
 func summaryProfileReady(p providerfactory.Result, b *budget.Controller) bool {
+	if memoryACPSummaryReleaseQualified && acpMemoryProfileReady(p, b) {
+		return true
+	}
 	if p.Provider == nil || p.Provider.Name() != antigravity.Name || p.ModelName != antigravity.FlashHighModel || b == nil {
 		return false
 	}

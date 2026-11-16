@@ -70,6 +70,11 @@ gate, now passed for the exact profile above. The native three-compaction/six-co
 quality and complete-cost evidence is recorded in the [acceptance report](../../../docs/testing/issue-84-verified-summaries.md).
 Environment flags cannot bypass qualification or its actual provider/budget profile.
 
+The owning App has a separate exact ACP compatibility gate, backed by real prefix
+publication and retained-timeout recovery under opaque request/time/data policies.
+Native usage remains unknown. This does not claim the native cost/latency
+comparison above; the timed-out window stays failed.
+
 Real PostgreSQL acceptance: `go test -race -count=1 ./internal/memory/compaction
 ./internal/memory/summary ./internal/memory/jobs ./internal/memory/catalog`.
 The controlled provider is a transport fixture, not native Gemini quality proof.

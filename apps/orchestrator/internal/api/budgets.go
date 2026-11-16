@@ -28,6 +28,7 @@ func NewBudgetHandler(ledger *budget.Ledger, auth *OwnerControlAuth, ownerDayEna
 			budget.Snapshot
 			OwnerDayEnabled               bool `json:"owner_day_enabled"`
 			ConversationModelTurnsEnabled bool `json:"conversation_model_turns_enabled"`
-		}{s, ownerDayEnabled, conversationModelTurnsEnabled})
+			OpaquePromptLimitEnabled      bool `json:"opaque_prompt_limit_enabled"`
+		}{s, ownerDayEnabled, conversationModelTurnsEnabled, true})
 	})
 }

@@ -157,7 +157,7 @@
               <p>{{ provider.model }}</p>
             </div>
             <span class="provider-badge" :class="provider.connected ? 'provider-badge--connected' : 'provider-badge--idle'">
-              {{ provider.connected ? 'Connected' : provider.auth_kind === 'api_key' ? 'Config only' : 'Not connected' }}
+              {{ provider.auth_kind === 'dedicated_cli' ? 'Operator managed' : provider.connected ? 'Connected' : provider.auth_kind === 'api_key' ? 'Config only' : 'Not connected' }}
             </span>
           </div>
 
@@ -203,6 +203,9 @@
           <div class="provider-actions">
             <template v-if="provider.name === 'openai'">
               <p class="provider-actions__hint">Managed through `BUTLER_OPENAI_API_KEY` and grouped settings.</p>
+            </template>
+            <template v-else-if="provider.name === 'antigravity-acp'">
+              <p class="provider-actions__hint">Official Google CLI in Butler's isolated ACP runtime. Login is managed through the private operator flow. Requests, time and data have execution budgets; native token usage is unknown. Operator managed does not establish model availability.</p>
             </template>
             <template v-else-if="provider.name === 'antigravity'">
               <p class="provider-actions__hint">Google AI Pro credentials are installed by the operator through a private sign-in and encrypted import. Connected means credentials are stored; model access also depends on your subscription quota.</p>
@@ -555,6 +558,8 @@ async function refreshAll() {
 
 function providerTitle(name: string) {
   switch (name) {
+    case 'antigravity-acp':
+      return 'Gemini · Antigravity ACP'
     case 'antigravity':
       return 'Google Antigravity · Google AI Pro'
     case 'github-copilot':

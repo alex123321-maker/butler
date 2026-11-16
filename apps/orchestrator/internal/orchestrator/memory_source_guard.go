@@ -20,6 +20,15 @@ type sourceGuardedProvider struct {
 	}
 }
 
+func (p *sourceGuardedProvider) AgentExecutionLimits() transport.AgentExecutionLimits {
+	if agent, ok := p.ModelProvider.(interface {
+		AgentExecutionLimits() transport.AgentExecutionLimits
+	}); ok {
+		return agent.AgentExecutionLimits()
+	}
+	return transport.AgentExecutionLimits{}
+}
+
 func (p *sourceGuardedProvider) InferenceLimits() (int64, int64) {
 	if bounded, ok := p.ModelProvider.(interface{ InferenceLimits() (int64, int64) }); ok {
 		return bounded.InferenceLimits()

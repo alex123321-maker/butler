@@ -14,6 +14,7 @@ import (
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 	"github.com/butler/butler/internal/memory/transcript"
 	"github.com/butler/butler/internal/research"
+	"github.com/butler/butler/internal/toolcatalog"
 	"github.com/butler/butler/internal/transport"
 )
 
@@ -38,7 +39,7 @@ func (s *Service) researchFeedback(ctx context.Context, current *sessionv1.RunRe
 	}
 	rejected, detailed := 0, false
 	for _, c := range h.ToolCalls {
-		if c.RunID == current.GetRunId() && c.Status == "validation_rejected" {
+		if c.RunID == current.GetRunId() && c.Status == "validation_rejected" && !toolcatalog.IsTool(c.ToolName) {
 			rejected++
 		}
 	}
@@ -77,11 +78,14 @@ func (s *Service) rejectDraft(ctx context.Context, current *sessionv1.RunRecord,
 	}
 	rejected := 0
 	for _, c := range h.ToolCalls {
-		if c.RunID == current.GetRunId() && c.Status == "validation_rejected" {
+		if c.RunID == current.GetRunId() && c.Status == "validation_rejected" && toolcatalog.IsTool(c.ToolName) == toolcatalog.IsTool(r.ToolName) {
 			rejected++
 		}
 	}
 	if rejected >= 4 {
+		if toolcatalog.IsTool(r.ToolName) {
+			return nil, current, &budget.LoopError{Reason: "catalog_corrections_exhausted"}
+		}
 		return nil, current, &budget.LoopError{Reason: "draft_corrections_exhausted"}
 	}
 	next, err := s.transition(ctx, current.GetRunId(), current.GetCurrentState(), commonv1.RunState_RUN_STATE_TOOL_PENDING, lease, "", "")
@@ -116,7 +120,7 @@ func (s *Service) rejectDraft(ctx context.Context, current *sessionv1.RunRecord,
 	current = next
 	stream, err := s.resumeProviderWithToolResult(ctx, current, r.ToolCallRef, toolResultEnvelope(result))
 	if err != nil {
-		return nil, current, fmt.Errorf("submit research correction: %w", err)
+		return nil, current, fmt.Errorf("submit tool correction: %w", err)
 	}
 	next, err = s.transition(ctx, current.GetRunId(), current.GetCurrentState(), commonv1.RunState_RUN_STATE_MODEL_RUNNING, lease, "", "")
 	return stream, next, err

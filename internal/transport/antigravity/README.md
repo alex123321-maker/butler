@@ -1,5 +1,10 @@
 # Antigravity native transport
 
+`ValidateLogicalToolSchema` and `ValidateLogicalToolArguments` expose the existing
+strict schema/argument validation without auth or I/O. The separate experimental
+[`antigravity-acp`](../antigravityacp/README.md) adapter reuses these validators
+for Broker proposals; it does not reuse this transport's tokens or HTTP route.
+
 FAILED_PRECONDITION location refusals project onto the existing content-free
 `upstream_location_policy` category. This is the upstream's diagnostic claim,
 not independent location proof. Raw account messages/URLs remain private; no

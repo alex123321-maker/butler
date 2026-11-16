@@ -1,0 +1,122 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg17
+    environment:
+      POSTGRES_DB: butler_acp_test
+      POSTGRES_HOST_AUTH_METHOD: trust
+    tmpfs:
+      - /var/lib/postgresql/data:rw,nosuid,nodev,size=512m
+    networks: [backend]
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U postgres -d butler_acp_test"]
+      interval: 1s
+      timeout: 3s
+      retries: 30
+
+  redis:
+    image: redis:7.4-alpine
+    networks: [backend]
+
+  secrets:
+    # Reuse the baseline BusyBox utilities; the isolated ACP image intentionally
+    # omits head/base64 and must not silently generate empty service tokens.
+    image: redis:7.4-alpine
+    network_mode: none
+    read_only: true
+    cap_drop: [ALL]
+    cap_add: [CHOWN]
+    security_opt: [no-new-privileges:true]
+    volumes: ["service-secrets:/profile"]
+    entrypoint: [/bin/sh, -c]
+    command: ["set -eu; umask 077; for name in action owner; do if [ ! -s /profile/$$name.token ]; then head -c 48 /dev/urandom | base64 > /profile/$$name.token; fi; test -s /profile/$$name.token; chown 10001:10001 /profile/$$name.token; done"]
+
+  migrator:
+    image: butler-acp-runtime:1.5.9
+    entrypoint: [/stand/bin/migrator, -migrations-dir, /migrations]
+    environment:
+      BUTLER_POSTGRES_URL: postgres://postgres@postgres:5432/butler_acp_test?sslmode=disable
+    volumes:
+      - "${BUTLER_ACP_BUILD_DIR:?}/bin:/stand/bin:ro"
+      - "${BUTLER_ACP_SOURCE_DIR:?}/migrations:/migrations:ro"
+    networks: [backend]
+    depends_on:
+      postgres: {condition: service_healthy}
+
+  tool-doctor:
+    image: butler-acp-runtime:1.5.9
+    entrypoint: [/stand/bin/tool-doctor]
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    volumes: ["${BUTLER_ACP_BUILD_DIR:?}/bin:/stand/bin:ro"]
+    networks: [backend]
+
+  tool-broker:
+    image: butler-acp-runtime:1.5.9
+    entrypoint: [/stand/bin/tool-broker]
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    environment:
+      BUTLER_POSTGRES_URL: postgres://postgres@postgres:5432/butler_acp_test?sslmode=disable
+      BUTLER_TOOL_REGISTRY_PATH: /configs/tools.json
+      BUTLER_ACTION_CONTEXT_URL: http://orchestrator:8080/internal/action-context
+      BUTLER_ACTION_AUTHORITY_TOKEN_FILE: /secrets/action.token
+      BUTLER_MEMORY_DELETION_MANIFEST_FILE: /profile/deletions.log
+      BUTLER_EXECUTION_BUDGET_POLICY_JSON: '${BUTLER_ACP_TEST_BUDGET:?}'
+    volumes:
+      - "${BUTLER_ACP_BUILD_DIR:?}/bin:/stand/bin:ro"
+      - "${BUTLER_ACP_SOURCE_DIR:?}/configs:/configs:ro"
+      - service-secrets:/secrets:ro
+      - memory-anchor:/profile:ro
+    networks: [backend]
+    depends_on:
+      migrator: {condition: service_completed_successfully}
+      secrets: {condition: service_completed_successfully}
+
+  orchestrator:
+    image: butler-acp-runtime:1.5.9
+    entrypoint: [/stand/bin/orchestrator]
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    pids_limit: 96
+    mem_limit: 512m
+    environment:
+      BUTLER_POSTGRES_URL: postgres://postgres@postgres:5432/butler_acp_test?sslmode=disable
+      BUTLER_REDIS_URL: redis://redis:6379/0
+      BUTLER_TOOL_BROKER_ADDR: tool-broker:9090
+      BUTLER_MODEL_PROVIDER: antigravity-acp
+      BUTLER_OPENAI_TIMEOUT_SECONDS: "30"
+      BUTLER_ANTIGRAVITY_ACP_ENABLED: "true"
+      BUTLER_ANTIGRAVITY_ACP_MODEL: gemini-3.8-flash
+      BUTLER_ANTIGRAVITY_ACP_SOCKET: /run/acp/agent.sock
+      BUTLER_EXECUTION_BUDGET_POLICY_JSON: '${BUTLER_ACP_TEST_BUDGET:?}'
+      BUTLER_ACTION_AUTHORITY_TOKEN_FILE: /secrets/action.token
+      BUTLER_OWNER_CONTROL_OWNER_ID: acp-smoke-owner
+      BUTLER_OWNER_CONTROL_TOKEN_FILE: /secrets/owner.token
+      BUTLER_MEMORY_PIPELINE_ENABLED: "false"
+      BUTLER_MEMORY_DELETION_MANIFEST_FILE: /profile/deletions.log
+    volumes:
+      - "${BUTLER_ACP_BUILD_DIR:?}/bin:/stand/bin:ro"
+      - acp-control:/run/acp:ro
+      - service-secrets:/secrets:ro
+      - memory-anchor:/profile
+    ports: ["127.0.0.1:18088:8080"]
+    networks: [backend]
+    depends_on:
+      migrator: {condition: service_completed_successfully}
+      secrets: {condition: service_completed_successfully}
+      tool-broker: {condition: service_started}
+      redis: {condition: service_started}
+
+networks:
+  backend:
+    internal: true
+
+volumes:
+  acp-control:
+    external: true
+    name: butler-acp-200-control
+  service-secrets:
+  memory-anchor:

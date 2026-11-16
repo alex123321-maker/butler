@@ -41,16 +41,9 @@ func (p *budgetedProvider) admit(ctx context.Context, runID string, request any,
 			return nil, err
 		}
 	}
-	limits, ok := p.ModelProvider.(interface{ InferenceLimits() (int64, int64) })
-	if !ok {
-		return nil, &budget.LoopError{Reason: "provider_inference_limits_unavailable"}
-	}
-	input, output := limits.InferenceLimits()
-	if input <= 0 || output <= 0 {
-		return nil, &budget.LoopError{Reason: "provider_inference_limits_invalid"}
-	}
-	if output > s.config.Budgets.Policy.OutputTokens {
-		return nil, &budget.LoopError{Reason: "provider_output_allowance_exceeds_policy"}
+	input, err := p.inferenceAllowance()
+	if err != nil {
+		return nil, err
 	}
 	a, err := s.config.Budgets.AdmitModel(ctx, runID, s.config.ActionMandateID, s.config.ProviderName, s.config.ModelName, input)
 	if err != nil {
@@ -179,7 +172,7 @@ func (p *budgetedProvider) admit(ctx context.Context, runID string, request any,
 					if s.config.ProviderName == modelprovider.ProviderAntigravity && s.config.ModelName == "gemini-3.8-flash-high" && usage.TotalTokens > 0 {
 						generated = max(generated, int64(usage.TotalTokens)-in)
 					}
-					if in > input || generated > a.OutputTokens {
+					if !a.Agent && (in > input || generated > a.OutputTokens) {
 						stopTurn = true
 						event = transport.NewTransportErrorEvent(runID, p.Name(), fmt.Errorf("provider exceeded declared inference allowance"))
 						event.TransportError.Type = "execution_budget_tokens"
@@ -204,6 +197,41 @@ func (p *budgetedProvider) admit(ctx context.Context, runID string, request any,
 		}
 	}()
 	return out, nil
+}
+
+func (p *budgetedProvider) inferenceAllowance() (int64, error) {
+	if p.Name() == modelprovider.ProviderAntigravityACP {
+		if p.service.config.ProviderName != p.Name() || p.service.config.Budgets == nil {
+			return 0, budget.ErrUnknownCost
+		}
+		policy := p.service.config.Budgets.Policy
+		if _, err := policy.AgentQuote(p.Name(), p.service.config.ModelName); err != nil {
+			return 0, err
+		}
+		agent, ok := p.ModelProvider.(interface {
+			AgentExecutionLimits() transport.AgentExecutionLimits
+		})
+		if !ok {
+			return 0, &budget.LoopError{Reason: "provider_agent_limits_unavailable"}
+		}
+		limits := agent.AgentExecutionLimits()
+		if !limits.Valid() || limits.OutputBytes > policy.AgentOutputBytes || limits.WallTime > time.Duration(policy.ModelMillis)*time.Millisecond {
+			return 0, &budget.LoopError{Reason: "provider_agent_limits_exceed_policy"}
+		}
+		return 0, nil
+	}
+	limits, ok := p.ModelProvider.(interface{ InferenceLimits() (int64, int64) })
+	if !ok {
+		return 0, &budget.LoopError{Reason: "provider_inference_limits_unavailable"}
+	}
+	input, output := limits.InferenceLimits()
+	if input <= 0 || output <= 0 {
+		return 0, &budget.LoopError{Reason: "provider_inference_limits_invalid"}
+	}
+	if output > p.service.config.Budgets.Policy.OutputTokens {
+		return 0, &budget.LoopError{Reason: "provider_output_allowance_exceeds_policy"}
+	}
+	return input, nil
 }
 
 // Prefer one turn-level observation, with the existing final-only field as a

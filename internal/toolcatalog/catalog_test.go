@@ -81,3 +81,16 @@ func TestToolSearchRussianOperationRanksBeforeCategoryOnlyMatch(t *testing.T) {
 		t.Fatal("operation intent lost in category matches", page)
 	}
 }
+
+func TestSearchOptionalLimitAndSchemaFields(t *testing.T) {
+	for _, args := range []string{`{}`, `{"limit":1}`, `{"limit":8}`} {
+		if _, err := Decode(Search, args); err != nil {
+			t.Fatalf("%s: %v", args, err)
+		}
+	}
+	for _, args := range []string{`{"limit":0}`, `{"limit":10}`, `{"limit":null}`, `{"LIMIT":4}`, `{"tool_refs":[]}`, `{"private-field":1}`} {
+		if _, err := Decode(Search, args); err == nil || strings.Contains(err.Error(), "private-field") {
+			t.Fatalf("expected bounded feedback for %s, got %v", args, err)
+		}
+	}
+}

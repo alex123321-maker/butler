@@ -26,6 +26,7 @@ type ModelPolicyRequest struct {
 	IntervalSeconds int               `json:"interval_seconds"`
 	MaxJobs         int               `json:"max_jobs"`
 	Privacy         string            `json:"privacy"`
+	AccountingMode  string            `json:"accounting_mode,omitempty"`
 	Job             Request           `json:"job"`
 	Contexts        []ModelContextRef `json:"contexts,omitempty"`
 }
@@ -48,6 +49,17 @@ func (e *waitReason) Is(target error) bool { return target == ErrWaiting }
 
 func validAllowance(u budget.Units) bool {
 	return u.ModelTurns > 0 && u.ModelTurns <= 128 && u.Tokens > 0 && u.Tokens <= 1<<32 && u.CostMicros >= 0 && u.CostMicros <= 1<<40 && u.ActiveMillis > 0 && u.ActiveMillis <= 86400000 && u.ProviderInputBytes > 0 && u.ProviderInputBytes <= 1<<32 && u.ExternalCalls == 0 && u.EgressBytes == 0 && u.Children == 0
+}
+
+func validModelAllowance(q ModelPolicyRequest) bool {
+	if q.AccountingMode == "" || q.AccountingMode == "tokens" {
+		return validAllowance(q.Job.Allowance)
+	}
+	if q.AccountingMode != "opaque_subscription" {
+		return false
+	}
+	u := q.Job.Allowance
+	return u.ModelTurns > 0 && u.ModelTurns <= 128 && u.Tokens == 0 && u.CostMicros == 0 && u.ActiveMillis > 0 && u.ActiveMillis <= 86400000 && u.ProviderInputBytes > 0 && u.ProviderInputBytes <= 1<<32 && u.EgressBytes > 0 && u.EgressBytes <= 1<<32 && u.ExternalCalls == 0 && u.Children == 0
 }
 
 func (s *Store) CreateModelPolicy(ctx context.Context, q ModelPolicyRequest) (ModelPolicy, error) {
@@ -75,7 +87,7 @@ func (s *Store) CreateModelPolicyTx(ctx context.Context, tx pgx.Tx, q ModelPolic
 
 func (s *Store) createModelPolicyTx(ctx context.Context, tx pgx.Tx, q ModelPolicyRequest, terminal *terminalExperiencePin) (ModelPolicy, error) {
 	actor, ok := owneridentity.FromContext(ctx)
-	if !ok || tx == nil || len(q.ID) < 8 || len(q.ID) > 128 || len(q.Handler) < 1 || len(q.Handler) > 128 || q.MaxJobs < 1 || q.MaxJobs > 32 || q.IntervalSeconds < 60 || q.IntervalSeconds > 86400 || (q.Privacy != "cloud_allowed" && q.Privacy != "local_only") || !validAllowance(q.Job.Allowance) || len(q.Job.Sources) > 64 {
+	if !ok || tx == nil || len(q.ID) < 8 || len(q.ID) > 128 || len(q.Handler) < 1 || len(q.Handler) > 128 || q.MaxJobs < 1 || q.MaxJobs > 32 || q.IntervalSeconds < 60 || q.IntervalSeconds > 86400 || (q.Privacy != "cloud_allowed" && q.Privacy != "local_only") || !validModelAllowance(q) || len(q.Job.Sources) > 64 {
 		return ModelPolicy{}, ErrClaim
 	}
 	switch q.Trigger {
@@ -687,7 +699,7 @@ func (s *Store) ModelView(ctx context.Context) ([]json.RawMessage, error) {
 	if !ok {
 		return nil, ErrClaim
 	}
-	rows, e := s.pool.Query(ctx, `SELECT jsonb_build_object('policy_id',p.policy_id,'state',p.state,'reason',p.reason,'jobs_created',p.jobs_created,'next_event_at',p.next_event_at,'handler',p.policy->>'handler','jobs',COALESCE((SELECT jsonb_agg(jsonb_build_object('job_id',j.job_id,'status',j.status,'attempts',j.attempts,'reason',j.error_code,'attempt_observations',COALESCE((SELECT jsonb_agg(jsonb_build_object('operation_id',a.operation_id,'state',a.state,'usage',a.usage,'quote',a.quote,'reason',a.reason,'created_at',a.created_at)) FROM memory_model_attempts a WHERE a.job_id=j.job_id),'[]'),'result_source_id',(SELECT result_source_id FROM memory_model_attempts a WHERE a.job_id=j.job_id AND a.state='published'))) FROM memory_aux_jobs j WHERE j.policy_id=p.policy_id),'[]')) FROM memory_model_policies p WHERE p.owner_id=$1 ORDER BY p.created_at DESC LIMIT 100`, a.OwnerID)
+	rows, e := s.pool.Query(ctx, `SELECT jsonb_build_object('policy_id',p.policy_id,'state',p.state,'reason',p.reason,'jobs_created',p.jobs_created,'next_event_at',p.next_event_at,'handler',p.policy->>'handler','accounting_mode',COALESCE(NULLIF(p.policy->>'accounting_mode',''),'tokens'),'jobs',COALESCE((SELECT jsonb_agg(jsonb_build_object('job_id',j.job_id,'status',j.status,'attempts',j.attempts,'reason',j.error_code,'attempt_observations',COALESCE((SELECT jsonb_agg(jsonb_build_object('operation_id',a.operation_id,'state',a.state,'usage',a.usage,'quote',a.quote,'reason',a.reason,'created_at',a.created_at)) FROM memory_model_attempts a WHERE a.job_id=j.job_id),'[]'),'result_source_id',(SELECT result_source_id FROM memory_model_attempts a WHERE a.job_id=j.job_id AND a.state='published'))) FROM memory_aux_jobs j WHERE j.policy_id=p.policy_id),'[]')) FROM memory_model_policies p WHERE p.owner_id=$1 ORDER BY p.created_at DESC LIMIT 100`, a.OwnerID)
 	if e != nil {
 		return nil, e
 	}

@@ -1,5 +1,23 @@
 # Butler — Credential Management and Deferred Secret Resolution
 
+The default-off [Antigravity ACP adapter](../../internal/transport/antigravityacp/README.md)
+has a separate operator-owned, dedicated CLI HOME. It never imports the existing
+native provider's OAuth material, accepts model-proposed executable/profile/env,
+or implements Web/Telegram credential entry. Profile preparation writes only
+managed settings/agent definitions. Authorized login runs the official
+`agy acp --login` only inside the dedicated container. The owner supplies its
+one-use code or exact Google callback URL through a private mode0600 file,
+atomically delivered and removed after reading. No code, token, raw CLI log or
+ordinary owner home is sent to Core or model context. CLI readiness and account
+eligibility are not inferred from a successful login alone.
+Persistent CLI files may include OAuth material and transcripts. They are not
+Butler memory or model input and require private storage/retention. No global
+profile or host credential mounts are permitted. Core mounts only the control
+socket, not this profile. The separate runtime has network mode none and reaches
+fixed Google hosts through a Unix-socket egress relay. Credits remain disabled;
+the separate opaque accounting basis requires an explicit operator declaration.
+Composed live acceptance is separate from login/protocol readiness.
+
 Migration111's [external Google diagnostic RP](browser-google-auth.md) is a
 separate default-off protocol. `credentials.request_external_login` selects a
 pinned record and exact source page under current owner-goal authority, but

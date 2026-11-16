@@ -12,6 +12,23 @@ import (
 	"github.com/butler/butler/internal/security/content"
 )
 
+func TestScheduledTaskHistoryExcludesUnrelatedConversation(t *testing.T) {
+	store := &mobileHistoryStore{memoryTranscriptStore: &memoryTranscriptStore{messages: []transcript.Message{{Role: "user", Content: strings.Repeat("unrelated session work ", 50000)}}}, selected: transcript.Transcript{SourceRevision: 9, Messages: []transcript.Message{
+		{RunID: "previous", Role: "assistant", Content: "Own scheduled attempt: external effect UNKNOWN; do not replay"},
+		{RunID: "current", Role: "user", Content: "scheduled current input"},
+		{RunID: "current", Role: "user", Content: "Exact owner interaction response", MetadataJSON: `{"kind":"interaction_response"}`},
+	}}}
+	s := newFixtureService(&memorySessionRepo{}, &memoryLeaseManager{}, newMemoryRunManager(), store, &mockProvider{}, Config{}, nil)
+	p := preparedRun{CurrentRunID: "current", Task: &task.Record{TaskID: "scheduled-task", Source: map[string]any{"type": "scheduled_job"}}}
+	if err := s.attachTranscriptContext(context.Background(), "session", &p); err != nil {
+		t.Fatal(err)
+	}
+	text := fixtureContextText(p.InputItems)
+	if store.task != "scheduled-task" || !p.InputAlreadyRecorded || strings.Contains(text, "unrelated") || strings.Contains(text, "scheduled current input") || !strings.Contains(text, "UNKNOWN") || !strings.Contains(text, "Exact owner interaction") || p.observabilityHistory["coverage_mode"] != "scheduled_task_history" {
+		t.Fatal("scheduled task lost its own history or replayed unrelated work")
+	}
+}
+
 func TestOwnerGoalTaskHistoryRetainsOwnAttemptsAndInteraction(t *testing.T) {
 	old := []transcript.Message{{Role: "user", Content: strings.Repeat("unrelated session work ", 50000)}}
 	selected := transcript.Transcript{SourceRevision: 9, Messages: []transcript.Message{

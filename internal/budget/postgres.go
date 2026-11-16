@@ -159,7 +159,8 @@ func (l *Ledger) reserve(ctx context.Context, tx pgx.Tx, req Request) (Reservati
 		if s.OwnerID != req.OwnerID {
 			return Reservation{}, false, ErrConflict
 		}
-		next, err := addWithinPolicy(s, req.Charge, now, l.disableConversationModelTurns)
+		opaque, _ := ctx.Value(opaquePromptAdmissionKey{}).(bool)
+		next, err := addWithinPolicy(s, req.Charge, now, l.disableConversationModelTurns && !opaque)
 		if err != nil {
 			return Reservation{}, false, err
 		}

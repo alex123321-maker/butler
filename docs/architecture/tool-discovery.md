@@ -19,6 +19,8 @@ There is no new service, runtime, queue, dependency or migration.
 Conversation action slots support nullable task identity and remain bound to the
 exact live input/session/owner/run. Cross-run linking still requires a task.
 
+Malformed catalog arguments generate correlated tool feedback before action preparation. The model can submit corrected arguments in the same run, within its normal budget and a maximum of four catalog corrections per run. Broker independently checks the same decoder at its preparation boundary.
+
 ## Ownership and model flow
 
 Broker owns the current run-scoped capability catalog and fixed `tools.search`

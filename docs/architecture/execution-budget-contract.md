@@ -1,5 +1,50 @@
 # Execution budget contract
 
+## Opaque subscription ACP admission
+
+The owner approved a distinct request/time/data accounting mode on2026-11-16.
+The exact `antigravity-acp:gemini-...` model must have basis
+`subscription_agent_no_overage`; the older `subscription_no_overage`, missing
+price or another provider cannot select it. This is an explicit operator claim
+of no incremental billing, not evidence of entitlement or Google's internal
+metering. The dedicated CLI profile fixes `useG1Credits=false`; no API-key,
+native-provider or paid-overage fallback is installed.
+
+The existing PostgreSQL admission transaction still proves ownership, task and
+assigned authority, locks all task/conversation/mandate/day/delegation scopes,
+spends a fresh permanent operation and reserves one ACP prompt, full wall-time,
+Butler input byte allowance and `agent_output_bytes` against egress. A prompt
+may hide multiple Google model calls; its native tokens and cost measurements
+remain unknown. The runtime caps Butler JSON input at2MiB, answer/proposal text
+at64KiB and process/protocol time at300s. The configured provider timeout uses
+the common `BUTLER_OPENAI_TIMEOUT_SECONDS`, must fit the policy and can be
+shorter; the earlier caller/scope/authority deadline still wins.
+Data reservations cover Butler's logical
+payload, not an inferred size of hidden Google prompts or all TLS traffic.
+The independent network proxy has finite connection/time/byte safety caps.
+
+Migration112 permits zero token allowances only for the distinct ACP provider;
+zero here means not applicable, never zero measured tokens. The owner attempt
+read model labels these rows `accounting_mode:opaque_subscription`; aggregate
+receipts expose `opaque_attempts`, while actual input/output fields stay NULL.
+Existing token allowances, counters, observations and scopes are not rewritten,
+reset or refunded. Token budgets continue to apply to token-metered operations;
+the explicit ACP mode instead enforces prompt/time/data limits.
+
+The older `disable_conversation_model_turns` setting applies to token-mode
+admission only. Opaque ACP always enforces the immutable conversation prompt
+ceiling against retained spending, including across restart; this separate mode
+cannot acquire an unlimited prompt allowance from that native opt-out.
+
+Start, continuation and tool-result inference share this admission path.
+Initiative/schedule/converter preflight selects the same agent quote, not fake
+positive token limits. Agent timeouts do not acquire the native single-turn
+automatic retry allowance. Cancellation, failed dispatch, runtime/auth failure
+or restart never replenish spending. Application rollback disables ACP but
+retains migration112; down refuses retained opaque attempts.
+
+The following token-metered provisions are unchanged for existing providers.
+
 The optional external Google kernel reserves a distinct permanent operation
 for its single private exchange before dispatch. Its child is not a public
 commit-capable tool grant. Execution uses the remaining PostgreSQL-owned budget
@@ -184,8 +229,9 @@ response carrying an error remains uncertain with no automatic replay.
 
 Batch capability is false. An unexpected batch is rejected entirely before first
 dispatch, so a new iteration cannot treat partial correlated results as complete.
-Current declared inference limits exist only for native Antigravity; other
-adapters fail closed. Private transport.WithInputByteLimit checks the complete
+Current declared native inference limits exist only for native Antigravity;
+the explicit opaque ACP route above uses request/time/data admission instead.
+Other unqualified adapters fail closed. Private transport.WithInputByteLimit checks the complete
 native serialized request including retained history and schemas before HTTP;
 unset cap is 8MiB. Broker reserves 4MiB tool egress. Lower tool quotes require a
 private trusted enforced cap via budget.WithToolEgressAllowance. Runtime wire/

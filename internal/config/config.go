@@ -97,6 +97,13 @@ type OrchestratorConfig struct {
 	GitHubCopilotModel                string
 	AntigravityModel                  string
 	AntigravityMaximumOutputTokens    int
+	AntigravityACPEnabled             bool
+	AntigravityACPModel               string
+	AntigravityACPExecutable          string
+	AntigravityACPSHA256              string
+	AntigravityACPProfileDir          string
+	AntigravityACPSocket              string
+	MemoryModelProvider               string
 	OpenAITimeoutSeconds              int
 	ToolBrokerAddr                    string
 	AutonomyMode                      string
@@ -344,7 +351,7 @@ func loadOrchestrator(get envGetter) (OrchestratorConfig, Snapshot, error) {
 		fieldSpec{key: "BUTLER_EXTENSION_API_TOKENS", component: "orchestrator", typeName: "csv", required: false, defaultValue: "", isSecret: true, requiresRestart: true, validate: validateOptionalNonEmptyTokenList, assign: func(v string) { cfg.ExtensionAPITokens = parseCSV(v) }},
 		fieldSpec{key: "BUTLER_SINGLE_TAB_TRANSPORT_MODE", component: "orchestrator", typeName: "string", required: false, defaultValue: "dual", allowedValues: singleTabRolloutModes, requiresRestart: true, assign: func(v string) { cfg.SingleTabTransportMode = strings.ToLower(strings.TrimSpace(v)) }},
 		fieldSpec{key: "BUTLER_SINGLE_TAB_RELAY_HEARTBEAT_TTL_SECONDS", component: "orchestrator", typeName: "int", required: false, defaultValue: "90", requiresRestart: true, validate: validatePositiveInt, assign: func(v string) { cfg.SingleTabRelayHeartbeatTTLSeconds = mustParseInt(v) }},
-		fieldSpec{key: "BUTLER_MODEL_PROVIDER", component: "orchestrator", typeName: "string", required: false, defaultValue: modelprovider.ProviderOpenAI, allowedValues: modelprovider.SupportedProviders(), requiresRestart: true, assign: func(v string) { cfg.ModelProvider = strings.ToLower(strings.TrimSpace(v)) }},
+		fieldSpec{key: "BUTLER_MODEL_PROVIDER", component: "orchestrator", typeName: "string", required: false, defaultValue: modelprovider.ProviderOpenAI, allowedValues: modelprovider.RuntimeProviders(), requiresRestart: true, assign: func(v string) { cfg.ModelProvider = strings.ToLower(strings.TrimSpace(v)) }},
 		fieldSpec{key: "BUTLER_CONTEXT_BUDGET_TOKENS", component: "orchestrator", typeName: "int", defaultValue: "65536", requiresRestart: true, validate: validatePositiveInt, assign: func(v string) { cfg.ContextBudgetTokens = mustParseInt(v) }},
 		fieldSpec{key: "BUTLER_OPENAI_API_KEY", component: "orchestrator", typeName: "string", required: false, defaultValue: "", isSecret: true, requiresRestart: true, validate: validateOptionalNonEmpty, assign: func(v string) { cfg.OpenAIAPIKey = v }},
 		fieldSpec{key: "BUTLER_OPENAI_MODEL", component: "orchestrator", typeName: "string", required: false, defaultValue: "gpt-4o-mini", requiresRestart: true, validate: validateNonEmpty, assign: func(v string) { cfg.OpenAIModel = v }},
@@ -386,6 +393,7 @@ func loadOrchestrator(get envGetter) (OrchestratorConfig, Snapshot, error) {
 	)
 
 	specs = append(specs, delegationOrchestratorSpecs(&cfg)...)
+	specs = append(specs, antigravityACPSpecs(&cfg)...)
 	specs = append(specs, guardedTabOrchestratorSpecs(&cfg)...)
 	specs = append(specs, externalAuthOrchestratorSpecs(&cfg)...)
 	specs = append(specs, memoryCandidateOrchestratorSpecs(&cfg)...)

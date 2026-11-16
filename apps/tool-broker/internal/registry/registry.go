@@ -14,6 +14,7 @@ import (
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 	"github.com/butler/butler/internal/memory/readcontrol"
 	"github.com/butler/butler/internal/security/egress"
+	"github.com/butler/butler/internal/toolcatalog"
 	"github.com/butler/butler/internal/websearch"
 	"google.golang.org/protobuf/proto"
 )
@@ -211,6 +212,11 @@ func (r *Registry) ValidateContext(ctx context.Context, call *toolbrokerv1.ToolC
 	}
 	if err := ValidateArgs(contract.GetInputSchemaJson(), call.GetArgsJson()); err != nil {
 		return false, contract, validationError(err.Error())
+	}
+	if toolcatalog.IsTool(toolName) {
+		if _, err := toolcatalog.Decode(toolName, call.GetArgsJson()); err != nil {
+			return false, contract, validationError(err.Error())
+		}
 	}
 	if toolName == "web.search" {
 		if _, err := websearch.Decode(call.GetArgsJson()); err != nil {

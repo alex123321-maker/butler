@@ -26,6 +26,18 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
+    "^(internal/acp/|internal/transport/(antigravityacp/|agent_limits[.]go$)|internal/budget/agent|internal/config/antigravity_acp|internal/providerfactory/antigravity_acp|apps/orchestrator/internal/(orchestrator/antigravity_acp_budget_test|app/memory_provider).*|cmd/acp-(profile|runtime)/|docker/acp-runtime/|deploy/acp/|deploy/docker-compose[.]acp[.]yml$|migrations/112_acp_subscription_budget|docs/architecture/antigravity-acp-adr[.]md$|scripts/dev/(test-acp-process|build-acp-runtime|start-acp-smoke)[.]ps1$)" {
+      [void]$specs.Add("docs/architecture/antigravity-acp-adr.md")
+      [void]$specs.Add("docs/architecture/model-transport-contract.md")
+      [void]$specs.Add("docs/architecture/tool-runtime-adr.md")
+      [void]$specs.Add("docs/architecture/credential-management.md")
+      [void]$specs.Add("docs/architecture/config-layering.md")
+      [void]$specs.Add("docs/architecture/execution-budget-contract.md")
+      [void]$tests.Add("With actual disposable BUTLER_TEST_POSTGRES_URL: go test ./internal/budget -run 'TestAgentBudget|TestConversationModelTurnOptOut' -count=1 -v. Required PG cases must execute, not skip. Verify strict ACP prompt ceiling despite native opt-out and restart, preserved NULLs/spending and rollback refusal.")
+      [void]$tests.Add("go test ./apps/orchestrator/internal/orchestrator -run TestAntigravityACP -count=1: explicit opaque budget on every entry; native token limits are not fabricated. Live acceptance is separate.")
+      [void]$tests.Add("go test ./internal/acp ./internal/transport/antigravityacp ./internal/providerfactory ./internal/config ./cmd/acp-profile -count=1 -timeout=60s; go test -race ./internal/acp ./internal/transport/antigravityacp where supported; pwsh -NoProfile -File scripts/dev/test-acp-process.ps1 for offline Linux process/provider/config fixtures, race x5 and vet. Prepopulate repo-local module cache first. No Google auth/inference, Broker effect or production qualification.")
+      continue
+    }
     "^(internal/(browserspa/|security/(egress|spaproxy)/|actionauth/spa|browsercontrol/spa|resourceexec/live)|apps/tool-(browser/internal/runtime|broker/internal/(app|broker))/spa|cmd/browser-spa-eval/|scripts/dev/browser-network-tests[.]sh$|[.]github/workflows/browser-network[.]yml$|docs/architecture/browser-(network-contract|spa-query-protocol)[.]md$|deploy/docker-compose.browser-spa[.]yml$)" {
       [void]$specs.Add("docs/architecture/browser-network-contract.md")
       [void]$specs.Add("docs/architecture/browser-session-contract.md")
