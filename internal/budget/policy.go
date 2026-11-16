@@ -30,11 +30,12 @@ type Policy struct {
 	RepeatLimit                   int64                 `json:"repeat_limit"`
 	ToolEgressBytes               int64                 `json:"tool_egress_bytes"`
 	ModelInputBytes               int64                 `json:"model_input_bytes"`
+	AgentOutputBytes              int64                 `json:"agent_output_bytes"`
 }
 
 func DefaultPolicy() Policy {
 	u := Units{ModelTurns: 64, Tokens: 67108864, ExternalCalls: 128, Children: 8, ActiveMillis: 3600000, EgressBytes: 134217728, ProviderInputBytes: 268435456}
-	return Policy{Task: u, Mandate: u, Day: Units{ModelTurns: 256, Tokens: 268435456, ExternalCalls: 512, Children: 32, ActiveMillis: 14400000, EgressBytes: 536870912, ProviderInputBytes: 1073741824}, Conversation: u, TaskLifetimeMillis: 604800000, ModelMillis: 120000, ToolMillis: 120000, OutputTokens: 8192, RepeatLimit: 3, Models: map[string]ModelPrice{}, ToolEgressBytes: 4194304, ModelInputBytes: 8388608}
+	return Policy{Task: u, Mandate: u, Day: Units{ModelTurns: 256, Tokens: 268435456, ExternalCalls: 512, Children: 32, ActiveMillis: 14400000, EgressBytes: 536870912, ProviderInputBytes: 1073741824}, Conversation: u, TaskLifetimeMillis: 604800000, ModelMillis: 120000, ToolMillis: 120000, OutputTokens: 8192, RepeatLimit: 3, Models: map[string]ModelPrice{}, ToolEgressBytes: 4194304, ModelInputBytes: 8388608, AgentOutputBytes: 65536}
 }
 func LoadPolicy() (Policy, error) {
 	return ParsePolicy(os.Getenv("BUTLER_EXECUTION_BUDGET_POLICY_JSON"))
@@ -63,7 +64,10 @@ func (p Policy) Validate() error {
 	if p.TaskLifetimeMillis <= 0 || p.TaskLifetimeMillis > 31536000000 || p.ModelMillis <= 0 || p.ModelMillis > 86400000 || p.ToolMillis <= 0 || p.ToolMillis > 86400000 || p.OutputTokens <= 0 || p.OutputTokens > 65536 || p.RepeatLimit < 2 || p.RepeatLimit > 100 || p.ToolEgressBytes < 4194304 || p.ModelInputBytes <= 0 || p.ModelInputBytes > 8388608 {
 		return ErrInvalid
 	}
-	for _, price := range p.Models {
+	if p.AgentOutputBytes <= 0 || p.AgentOutputBytes > 1<<20 {
+		return ErrInvalid
+	}
+	for key, price := range p.Models {
 		if price.InputMicrosPerToken < 0 || price.OutputMicrosPerToken < 0 {
 			return ErrInvalid
 		}
@@ -76,6 +80,10 @@ func (p Policy) Validate() error {
 			if price.InputMicrosPerToken != 0 || price.OutputMicrosPerToken != 0 {
 				return ErrInvalid
 			}
+		case AgentSubscriptionBasis:
+			if !strings.HasPrefix(key, "antigravity-acp:gemini-") || price.InputMicrosPerToken != 0 || price.OutputMicrosPerToken != 0 {
+				return ErrInvalid
+			}
 		default:
 			return ErrUnknownCost
 		}
@@ -86,6 +94,12 @@ func (p Policy) ModelQuote(provider, model string, inputTokens int64) (Units, er
 	price, ok := p.Models[provider+":"+model]
 	if !ok {
 		return Units{}, ErrUnknownCost
+	}
+	if price.Basis == AgentSubscriptionBasis {
+		if inputTokens != 0 {
+			return Units{}, ErrInvalid
+		}
+		return p.AgentQuote(provider, model)
 	}
 	if inputTokens < 0 || inputTokens > 100000000 {
 		return Units{}, ErrInvalid

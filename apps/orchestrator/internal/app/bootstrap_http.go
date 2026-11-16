@@ -164,10 +164,11 @@ func newHTTPServer(deps httpServerDeps) *http.Server {
 		memoryCatalogServer.SummaryPolicies = &compaction.Policies{Catalog: deps.sourceCatalog, Jobs: deps.memoryModelStore}
 	}
 	providerServer := apiservice.NewProviderServer(deps.authManager, deps.providerResult.ProviderName, map[string]string{
-		modelprovider.ProviderOpenAI:        deps.cfg.OpenAIModel,
-		modelprovider.ProviderOpenAICodex:   deps.cfg.OpenAICodexModel,
-		modelprovider.ProviderGitHubCopilot: deps.cfg.GitHubCopilotModel,
-		modelprovider.ProviderAntigravity:   deps.cfg.AntigravityModel,
+		modelprovider.ProviderOpenAI:         deps.cfg.OpenAIModel,
+		modelprovider.ProviderOpenAICodex:    deps.cfg.OpenAICodexModel,
+		modelprovider.ProviderGitHubCopilot:  deps.cfg.GitHubCopilotModel,
+		modelprovider.ProviderAntigravity:    deps.cfg.AntigravityModel,
+		modelprovider.ProviderAntigravityACP: deps.cfg.AntigravityACPModel,
 	}, strings.TrimSpace(deps.cfg.OpenAIAPIKey) != "")
 	eventServer := apiservice.NewEventServer(deps.transitionRepo, deps.runRepo, deps.eventHub, logger.WithComponent(deps.log, "event-api"))
 	taskViewServer := apiservice.NewTaskViewServer(deps.runRepo, deps.runRepo, deps.sessionRepo, deps.transcriptStore, deps.transitionRepo, deps.artifactsRepo, deps.deliveryEventsRepo)

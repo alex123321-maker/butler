@@ -1,5 +1,17 @@
 # Butler Configuration Layering
 
+`BUTLER_MEMORY_MODEL_PROVIDER` is a cold environment-only selection. Empty keeps
+the normal shared foreground/background composition. With ACP foreground, an
+explicit `antigravity` selects the separately qualified native memory backend
+using the existing High/output/timeout configuration and native budget basis.
+Explicit `antigravity-acp` selects the independently checked exact Flash300s ACP
+profile with its opaque subscription basis. Existing token policies remain
+immutable and wait on accounting-mode mismatch; new ACP policies explicitly use
+`opaque_subscription` and finite request/time/data allowances. Neither choice
+handles foreground fallback. Requested memory consumers without an explicit
+qualified selection fail startup rather than silently disappearing. Managed DB
+settings cannot change this operator-owned selection.
+
 `BUTLER_PUBLIC_WEB_READS_ENABLED` is a Broker-only startup flag, default false,
 outside the managed settings catalog. Owner opt-in grants standing release
 consent for public page URLs and search queries through the fixed read tools.
@@ -40,6 +52,22 @@ Display masking:
 - API keys are rendered as `...XXXX`
 - Telegram bot tokens are rendered as `XXXXXX:...XXX`
 # Context admission
+
+The experimental `antigravity-acp` adapter requires environment-only startup
+keys `BUTLER_ANTIGRAVITY_ACP_ENABLED` (default false),
+`BUTLER_ANTIGRAVITY_ACP_MODEL` and `BUTLER_ANTIGRAVITY_ACP_SOCKET`.
+The earlier executable/SHA256/profile keys remain parseable for compatibility
+but do not enable local process execution in Core. Runtime paths/digests/profile
+are private operator arguments of the separate `acp-runtime` service.
+They are absent from the managed settings catalog and cannot be assigned by
+database rows. The runtime name is accepted for explicit environment selection,
+but omitted from supported-provider choices in the managed UI. Missing opt-in,
+invalid private socket configuration or unsupported OS refuses construction;
+no fallback. Dispatch requires the exact `subscription_agent_no_overage` model
+basis in the shared execution budget policy. Strict token-metered declarations
+cannot silently enable opaque ACP execution.
+See [ACP qualification](antigravity-acp-adr.md); these are not an account login
+or production enablement mechanism.
 
 `BUTLER_CONTEXT_BUDGET_TOKENS` is a positive integer, defaults to `65536`, is
 available through layered environment/database settings and requires a restart.

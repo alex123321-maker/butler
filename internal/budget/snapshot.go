@@ -9,6 +9,7 @@ type Attempt struct {
 	OutputAllowance int64  `json:"output_allowance"`
 	ActualInput     *int64 `json:"actual_input_tokens"`
 	ActualOutput    *int64 `json:"actual_output_tokens"`
+	AccountingMode  string `json:"accounting_mode"`
 }
 type Snapshot struct {
 	Scopes   []Scope   `json:"scopes"`
@@ -37,14 +38,14 @@ func (l *Ledger) SnapshotOwner(ctx context.Context, owner string) (Snapshot, err
 	if err != nil {
 		return s, err
 	}
-	rows, err = l.pool.Query(ctx, `SELECT a.operation_id,a.run_id,a.input_allowance,a.output_allowance,a.actual_input_tokens,a.actual_output_tokens FROM execution_model_attempts a JOIN execution_budget_reservations r ON r.reservation_id=a.reservation_id WHERE r.owner_id=$1 ORDER BY a.created_at DESC LIMIT 200`, owner)
+	rows, err = l.pool.Query(ctx, `SELECT a.operation_id,a.run_id,a.input_allowance,a.output_allowance,a.actual_input_tokens,a.actual_output_tokens,CASE WHEN a.provider='antigravity-acp' AND a.output_allowance=0 THEN 'opaque_subscription' ELSE 'tokens' END FROM execution_model_attempts a JOIN execution_budget_reservations r ON r.reservation_id=a.reservation_id WHERE r.owner_id=$1 ORDER BY a.created_at DESC LIMIT 200`, owner)
 	if err != nil {
 		return s, err
 	}
 	defer rows.Close()
 	for rows.Next() {
 		var a Attempt
-		if err = rows.Scan(&a.OperationID, &a.RunID, &a.InputAllowance, &a.OutputAllowance, &a.ActualInput, &a.ActualOutput); err != nil {
+		if err = rows.Scan(&a.OperationID, &a.RunID, &a.InputAllowance, &a.OutputAllowance, &a.ActualInput, &a.ActualOutput, &a.AccountingMode); err != nil {
 			return s, err
 		}
 		s.Attempts = append(s.Attempts, a)

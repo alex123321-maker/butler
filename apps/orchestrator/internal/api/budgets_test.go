@@ -38,9 +38,13 @@ func TestBudgetReadReportsCurrentOwnerDayPolicyWithHistoricalScopesIntegration(t
 			budget.Snapshot
 			Enabled                       *bool `json:"owner_day_enabled"`
 			ConversationModelTurnsEnabled *bool `json:"conversation_model_turns_enabled"`
+			OpaquePromptLimitEnabled      bool  `json:"opaque_prompt_limit_enabled"`
 		}
 		if w.Code != 200 || json.Unmarshal(w.Body.Bytes(), &got) != nil || got.Enabled == nil || *got.Enabled != enabled || got.ConversationModelTurnsEnabled == nil || *got.ConversationModelTurnsEnabled == enabled || len(got.Scopes) != 1 || got.Scopes[0].Kind != "owner_day" {
 			t.Fatal("current enforcement confused with retained history", w.Code, w.Body.String())
+		}
+		if !got.OpaquePromptLimitEnabled {
+			t.Fatal("native opt-out hid strict ACP prompt limit")
 		}
 	}
 }

@@ -5,12 +5,19 @@ import (
 
 	"github.com/butler/butler/internal/budget"
 	"github.com/butler/butler/internal/providerfactory"
+	"github.com/butler/butler/internal/transport"
 )
 
 // Match ordinary model admission: the actual provider request limit must fit
 // policy. A smaller bookkeeping quote cannot impose a cap on a provider.
 func converterContinuationAllowance(selected providerfactory.Result, policy budget.Policy) (budget.ModelAllowance, error) {
 	a := budget.ModelAllowance{Provider: selected.ProviderName, Model: selected.ModelName}
+	if agent, ok := selected.Provider.(interface {
+		AgentExecutionLimits() transport.AgentExecutionLimits
+	}); ok && agent.AgentExecutionLimits().Valid() {
+		a.Agent = true
+		return a, a.Validate(policy)
+	}
 	declared, ok := selected.Provider.(interface{ InferenceLimits() (int64, int64) })
 	if !ok {
 		return a, fmt.Errorf("converter continuation requires declared provider inference limits")

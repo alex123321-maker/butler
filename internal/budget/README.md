@@ -1,5 +1,15 @@
 # Durable execution budgets
 
+The exact `antigravity-acp:gemini-...` basis `subscription_agent_no_overage`
+admits the owner-approved opaque subscription mode. Each prompt permanently
+reserves one request, active time and logical input/output bytes. Native token
+allowances are not applicable and observations stay NULL. Migration112 preserves
+all existing attempts; down refuses retained opaque attempts. Native budgets
+keep their measured-token contract. See the
+[budget contract](../../docs/architecture/execution-budget-contract.md).
+The native conversation-turn opt-out never disables the opaque ACP prompt
+ceiling. The owner read model reports `opaque_prompt_limit_enabled` separately.
+
 A failed taskless ordinary-text revision2 local preparation may have UNKNOWN
 field state while its pinned frozen-network contract proves no external write.
 Core and Broker recognize only the owning journal's immutable

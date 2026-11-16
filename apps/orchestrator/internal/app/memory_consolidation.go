@@ -11,6 +11,9 @@ import (
 )
 
 func configureConsolidationHandler(handlers map[string]jobs.ModelHandler, p providerfactory.Result, b *budget.Controller) {
+	if acpMemoryProfileReady(p, b) && !memoryACPConsolidationReleaseQualified {
+		return
+	}
 	if consolidation.ReleaseQualified && os.Getenv("BUTLER_MEMORY_MODEL_JOBS_ENABLED") == "true" && os.Getenv("BUTLER_MEMORY_CONSOLIDATION_CONSUMER_ENABLED") == "true" && summaryProfileReady(p, b) {
 		handlers[consolidation.Version] = consolidation.Handler{}
 	}

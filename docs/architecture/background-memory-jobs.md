@@ -59,8 +59,15 @@ Secret-class data and recognizable raw credentials deny processing.
 2. Check current task/assignment, global control, policy and full catalog manifest.
    Lock order is sessions → tasks/authority → control/policy → sorted sources →
    job → sorted budget scopes. No transaction remains open during provider HTTP.
-3. `ModelQuote` uses the configured provider's full `InferenceLimits` and the
-   operator output ceiling. Atomically reserve job, policy, root-task, assigned
+3. Token-mode `ModelQuote` uses the configured provider's full `InferenceLimits`
+   and the operator output ceiling. Explicit `accounting_mode: opaque_subscription`
+   instead requires exact ACP identity, declared `AgentExecutionLimits` and the
+   matching finite `AgentQuote`: prompts, wall time, input and output bytes,
+   zero monetary overage and unknown native tokens. The trusted auxiliary
+   controller recomputes this quote. Empty/`tokens` policies keep native semantics;
+   a different selected backend waits visibly on `accounting_mode_mismatch`
+   without consuming a retry. An accounting mode does not qualify a consumer.
+   Atomically reserve job, policy, root-task, assigned
    mandate and owner UTC-day allowance through the existing execution ledger.
    Persist the attempt/reservation, claim fence, source fingerprint, provider,
    model and independently known locality before calling transport.

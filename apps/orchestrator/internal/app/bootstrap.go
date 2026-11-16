@@ -66,6 +66,8 @@ import (
 	"github.com/butler/butler/internal/skills"
 	postgresstore "github.com/butler/butler/internal/storage/postgres"
 	redisstore "github.com/butler/butler/internal/storage/redis"
+	"github.com/butler/butler/internal/transport"
+	"github.com/butler/butler/internal/transport/antigravityacp"
 	"github.com/butler/butler/internal/workspaceexec"
 	"github.com/jackc/pgx/v5"
 	"google.golang.org/grpc"
@@ -169,7 +171,12 @@ func newApp(ctx context.Context, telegramOptions *TelegramCommunicationOptions) 
 		GitHubCopilotModel:             cfg.GitHubCopilotModel,
 		AntigravityModel:               cfg.AntigravityModel,
 		AntigravityMaximumOutputTokens: cfg.AntigravityMaximumOutputTokens,
-		Timeout:                        time.Duration(cfg.OpenAITimeoutSeconds) * time.Second,
+		AntigravityACP: antigravityacp.Config{
+			Enabled: cfg.AntigravityACPEnabled,
+			Model:   cfg.AntigravityACPModel, Timeout: time.Duration(cfg.OpenAITimeoutSeconds) * time.Second,
+			SocketPath: cfg.AntigravityACPSocket,
+		},
+		Timeout: time.Duration(cfg.OpenAITimeoutSeconds) * time.Second,
 	})
 	if err != nil {
 		redis.Close()
@@ -342,8 +349,15 @@ func newApp(ctx context.Context, telegramOptions *TelegramCommunicationOptions) 
 	}
 
 	memoryRuntimeConfig := cfg
-	memoryModelStore, memoryModelWorker := configureModelJobs(sourceCatalog, budgetController, providerResult, cfg.ContextBudgetTokens)
-	experienceMemory, err := configureExperience(sourceCatalog, toolBrokerClient, providerResult, budgetController)
+	memoryProviderResult, err := selectMemoryProvider(ctx, cfg, providerResult, providerBuilder, budgetController)
+	if err != nil {
+		redis.Close()
+		postgres.Close()
+		return nil, err
+	}
+	log.Info("memory model provider selected", "provider", memoryProviderResult.ProviderName, "model", memoryProviderResult.ModelName, "independent", cfg.MemoryModelProvider != "")
+	memoryModelStore, memoryModelWorker := configureModelJobs(sourceCatalog, budgetController, memoryProviderResult, cfg.ContextBudgetTokens)
+	experienceMemory, err := configureExperience(sourceCatalog, toolBrokerClient, memoryProviderResult, budgetController)
 	if err != nil {
 		redis.Close()
 		postgres.Close()
@@ -466,7 +480,7 @@ func newApp(ctx context.Context, telegramOptions *TelegramCommunicationOptions) 
 	}
 	var memoryCandidates *MemoryCandidates
 	var memoryReads *MemoryReads
-	temporalConsumerReady := temporalReadConfigured(cfg.MemoryTemporalEnabled, providerResult, budgetController)
+	temporalConsumerReady := temporalReadConfigured(cfg.MemoryTemporalEnabled, memoryProviderResult, budgetController)
 	adaptiveRetrieval, err := configureAdaptiveRetrieval(cfg, sourceCatalog)
 	if err != nil {
 		redis.Close()
@@ -673,6 +687,11 @@ func newApp(ctx context.Context, telegramOptions *TelegramCommunicationOptions) 
 	if limits, ok := providerResult.Provider.(interface{ InferenceLimits() (int64, int64) }); ok {
 		allowance.InputTokens, allowance.OutputTokens = limits.InferenceLimits()
 	}
+	if agent, ok := providerResult.Provider.(interface {
+		AgentExecutionLimits() transport.AgentExecutionLimits
+	}); ok && agent.AgentExecutionLimits().Valid() {
+		allowance.Agent = true
+	}
 	initiativeWorker := &initiative.Worker{Store: initiativeStore, Observer: initiative.ProjectObserver{Store: initiativeStore, RunDataGuard: func(ctx context.Context, runID string) error {
 		return checkRecordedInitiativeSources(ctx, postgres.Pool(), sourceCatalog, runID)
 	}}, Promoter: &initiative.Promoter{Store: initiativeStore, Goals: ownerGoals, Tasks: taskStore, Inputs: inputStore, Budgets: budgetController, Allowance: allowance}}
@@ -861,7 +880,7 @@ func newApp(ctx context.Context, telegramOptions *TelegramCommunicationOptions) 
 		memoryModelStore:           memoryModelStore,
 		memoryModelConfigured:      memoryModelWorker != nil,
 		memorySummaryConfigured:    summaryConsumerConfigured(memoryModelWorker),
-		memoryFeatureStates:        memoryFeatureConfigurations(cfg, providerResult, budgetController, memoryModelWorker, memoryCandidates != nil, memoryReads != nil, adaptiveRetrieval != nil, experienceMemory != nil),
+		memoryFeatureStates:        memoryFeatureConfigurations(cfg, memoryProviderResult, budgetController, memoryModelWorker, memoryCandidates != nil, memoryReads != nil, adaptiveRetrieval != nil, experienceMemory != nil),
 		consolidationConfigured:    consolidationConsumerConfigured(memoryModelWorker),
 		sourceCatalog:              sourceCatalog,
 		cfg:                        cfg,

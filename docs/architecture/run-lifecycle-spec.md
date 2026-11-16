@@ -1,5 +1,15 @@
 # Butler — Run Lifecycle Specification
 
+The default-off [ACP provider](antigravity-acp-adr.md) participates in the same
+input/run/authority/tool/result/delivery lifecycle. Each fresh agent prompt is
+admitted through the explicitly selected opaque subscription budget. A private
+two-phase runtime exchange rechecks authority immediately before the Google
+prompt; only Core/Broker may execute the resulting validated tool proposal.
+Cancellation closes the runtime connection and kills/reaps the isolated process
+namespace before accepting a result. Native token usage and internal model-call
+counts remain unknown. Durable approval recovery replays Butler-owned context
+and known tool results into a new provider context, without repeating effects.
+
 The optional `credentials.request_external_login` uses the canonical credential
 wait but approval alone does **not** ready it. The external kernel atomically
 readies the same Input only on terminal authentication, cancellation, denial,

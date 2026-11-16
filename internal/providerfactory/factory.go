@@ -11,6 +11,7 @@ import (
 	"github.com/butler/butler/internal/providerauth"
 	"github.com/butler/butler/internal/transport"
 	"github.com/butler/butler/internal/transport/antigravity"
+	"github.com/butler/butler/internal/transport/antigravityacp"
 	"github.com/butler/butler/internal/transport/githubcopilot"
 	"github.com/butler/butler/internal/transport/openai"
 	"github.com/butler/butler/internal/transport/openaicodex"
@@ -34,6 +35,7 @@ type BuildConfig struct {
 	GitHubCopilotModel             string
 	AntigravityModel               string
 	AntigravityMaximumOutputTokens int
+	AntigravityACP                 antigravityacp.Config
 	Timeout                        time.Duration
 }
 
@@ -56,6 +58,12 @@ func (f *Factory) Build(_ context.Context, cfg BuildConfig) (Result, error) {
 		provider = modelprovider.ProviderOpenAI
 	}
 	switch provider {
+	case modelprovider.ProviderAntigravityACP:
+		instance, err := antigravityacp.NewProvider(cfg.AntigravityACP)
+		if err != nil {
+			return Result{}, err
+		}
+		return Result{Provider: instance, ProviderName: provider, ModelName: cfg.AntigravityACP.Model}, nil
 	case modelprovider.ProviderAntigravity:
 		if f.auth == nil {
 			return Result{}, fmt.Errorf("antigravity requires the provider auth manager")

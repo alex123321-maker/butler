@@ -227,6 +227,7 @@ type ModelAdmission struct {
 	// A parent context may restrict this further at the trusted caller.
 	ModelTurnLimited bool
 	OutputTokens     int64
+	Agent            bool
 	ReservationID    string
 }
 
@@ -237,6 +238,16 @@ func (c *Controller) AdmitModel(ctx context.Context, runID, mandateID, provider,
 	charge, err := c.Policy.ModelQuote(provider, model, inputTokens)
 	if err != nil {
 		return ModelAdmission{}, err
+	}
+	agent := c.Policy.Models[provider+":"+model].Basis == AgentSubscriptionBasis
+	if agent {
+		// The explicit opaque mode requires a hard prompt ceiling, even when
+		// the operator disabled the older token-mode conversation turn check.
+		ctx = context.WithValue(ctx, opaquePromptAdmissionKey{}, true)
+	}
+	outputTokens := c.Policy.OutputTokens
+	if agent {
+		outputTokens = 0
 	}
 	op, err := NewOperationID()
 	if err != nil {
@@ -292,7 +303,7 @@ func (c *Controller) AdmitModel(ctx context.Context, runID, mandateID, provider,
 		}
 		authorityDeadline = a.AuthorityDeadline
 	}
-	if _, err = tx.Exec(ctx, `INSERT INTO execution_model_attempts(operation_id,run_id,reservation_id,provider,model,input_allowance,output_allowance) VALUES($1,$2,$3,$4,$5,$6,$7)`, op, runID, r.ID, provider, model, inputTokens, c.Policy.OutputTokens); err != nil {
+	if _, err = tx.Exec(ctx, `INSERT INTO execution_model_attempts(operation_id,run_id,reservation_id,provider,model,input_allowance,output_allowance) VALUES($1,$2,$3,$4,$5,$6,$7)`, op, runID, r.ID, provider, model, inputTokens, outputTokens); err != nil {
 		return ModelAdmission{}, err
 	}
 	if err = tx.Commit(ctx); err != nil {
@@ -314,10 +325,11 @@ func (c *Controller) AdmitModel(ctx context.Context, runID, mandateID, provider,
 			modelTurnLimited = false
 		}
 	}
-	return ModelAdmission{OperationID: op, ReservationID: r.ID, Deadline: deadline, ModelTurnLimited: modelTurnLimited, OutputTokens: c.Policy.OutputTokens}, nil
+	return ModelAdmission{OperationID: op, ReservationID: r.ID, Deadline: deadline, ModelTurnLimited: modelTurnLimited && !agent, OutputTokens: outputTokens, Agent: agent}, nil
 }
 
 type modelAdmissionKey struct{}
+type opaquePromptAdmissionKey struct{}
 
 // ToolDeadline reads only owned committed budget rows after a successful claim.
 // The runtime deadline is the earliest scope deadline or the reserved call time.

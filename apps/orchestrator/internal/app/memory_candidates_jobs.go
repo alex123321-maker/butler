@@ -27,6 +27,9 @@ func configureCandidateHandler(handlers map[string]jobs.ModelHandler, p provider
 // ceiling that shares the same handler. The worker still clamps actual model
 // calls to 300s and all current policy/claim/authority deadlines apply.
 func candidateProfileReady(p providerfactory.Result, b *budget.Controller) bool {
+	if memoryACPCandidateReleaseQualified && acpMemoryProfileReady(p, b) {
+		return true
+	}
 	if p.Provider == nil || p.Provider.Name() != antigravity.Name || p.ModelName != antigravity.FlashHighModel || b == nil {
 		return false
 	}

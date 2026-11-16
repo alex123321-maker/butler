@@ -65,3 +65,8 @@ qualification and the exact supported existing provider profile. Prepare and
 activate remain unavailable while unconfigured; list/review/deactivate/retire
 stay private operational controls for existing data. No legacy memory pipeline
 or automatic accepted rule is enabled.
+
+The App's independently checked exact ACP profile also supports this owner-reviewed
+workflow with explicit opaque policies. Actual duplicate and UNKNOWN preservation
+was checked through ACP; token/cost/latency parity with native V3 is not claimed.
+Activation, source and lifecycle guards remain identical.

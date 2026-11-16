@@ -39,6 +39,11 @@ func loadOrchestratorLayered(get envGetter, settings []Setting) (OrchestratorCon
 	cfg := OrchestratorConfig{}
 	resolver := NewLayeredResolver(get, settings)
 	snapshot, err := resolver.Resolve(layeredOrchestratorSpecs(&cfg))
+	acpSnapshot, acpErr := loadSpecs(get, antigravityACPSpecs(&cfg))
+	snapshot.keys = append(snapshot.keys, acpSnapshot.keys...)
+	if acpErr != nil {
+		return cfg, snapshot, acpErr
+	}
 	// Delegation topology is an operator choice. Stored settings cannot enable
 	// a private control route or widen executor concurrency.
 	operatorSnapshot, operatorErr := loadSpecs(get, delegationOrchestratorSpecs(&cfg))
@@ -203,7 +208,7 @@ func layeredOrchestratorSpecs(cfg *OrchestratorConfig) []fieldSpec {
 		fieldSpec{key: "BUTLER_EXTENSION_API_TOKENS", component: "orchestrator", typeName: "csv", required: false, defaultValue: "", isSecret: true, requiresRestart: true, validate: validateOptionalNonEmptyTokenList, assign: func(v string) { cfg.ExtensionAPITokens = parseCSV(v) }},
 		fieldSpec{key: "BUTLER_SINGLE_TAB_TRANSPORT_MODE", component: "orchestrator", typeName: "string", required: false, defaultValue: "dual", allowedValues: singleTabRolloutModes, requiresRestart: true, assign: func(v string) { cfg.SingleTabTransportMode = strings.ToLower(strings.TrimSpace(v)) }},
 		fieldSpec{key: "BUTLER_SINGLE_TAB_RELAY_HEARTBEAT_TTL_SECONDS", component: "orchestrator", typeName: "int", required: false, defaultValue: "90", requiresRestart: true, validate: validatePositiveInt, assign: func(v string) { cfg.SingleTabRelayHeartbeatTTLSeconds = mustParseInt(v) }},
-		fieldSpec{key: "BUTLER_MODEL_PROVIDER", component: "orchestrator", typeName: "string", required: false, defaultValue: modelprovider.ProviderOpenAI, allowedValues: modelprovider.SupportedProviders(), requiresRestart: true, assign: func(v string) { cfg.ModelProvider = strings.ToLower(strings.TrimSpace(v)) }},
+		fieldSpec{key: "BUTLER_MODEL_PROVIDER", component: "orchestrator", typeName: "string", required: false, defaultValue: modelprovider.ProviderOpenAI, allowedValues: modelprovider.RuntimeProviders(), requiresRestart: true, assign: func(v string) { cfg.ModelProvider = strings.ToLower(strings.TrimSpace(v)) }},
 		fieldSpec{key: "BUTLER_CONTEXT_BUDGET_TOKENS", component: "orchestrator", typeName: "int", defaultValue: "65536", requiresRestart: true, validate: validatePositiveInt, assign: func(v string) { cfg.ContextBudgetTokens = mustParseInt(v) }},
 		fieldSpec{key: "BUTLER_OPENAI_API_KEY", component: "orchestrator", typeName: "string", required: false, defaultValue: "", isSecret: true, requiresRestart: true, validate: validateOptionalNonEmpty, assign: func(v string) { cfg.OpenAIAPIKey = v }},
 		fieldSpec{key: "BUTLER_OPENAI_MODEL", component: "orchestrator", typeName: "string", required: false, defaultValue: "gpt-4o-mini", requiresRestart: true, validate: validateNonEmpty, assign: func(v string) { cfg.OpenAIModel = v }},

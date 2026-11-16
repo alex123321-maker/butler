@@ -1,6 +1,6 @@
 # Butler — Memory Model Specification
 
-Explicit authenticated owner-goal Tasks use the existing task transcript reader:
+Explicit authenticated owner-goal Tasks and scheduled Tasks use the existing task transcript reader:
 all primary messages belonging to that Task remain, including earlier attempts,
 tool transcripts and owner amendments. Unrelated work sharing the channel's
 session is not replayed. The selected primary bytes retain session revision and

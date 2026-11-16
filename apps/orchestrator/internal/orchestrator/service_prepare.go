@@ -356,11 +356,13 @@ func (s *Service) attachTranscriptContext(ctx context.Context, sessionKey string
 	if prepared == nil || s.transcript == nil {
 		return nil
 	}
-	// Explicit owner-goal tasks and mobile batches retain their own complete
+	// Explicit owner-goal/scheduled tasks and mobile batches retain their complete
 	// primary history, rather than replaying unrelated work in a shared channel.
 	// Other typed tasks keep their existing session history policy.
 	scopedOwnerTask := prepared.Task != nil && prepared.Task.Source["type"] == "owner_goal_task"
-	if prepared.Task != nil && (scopedOwnerTask || prepared.Task.Source["type"] == "initiative" && prepared.Task.Source["mobile_batch_id"] != nil) {
+	scopedScheduledTask := prepared.Task != nil && prepared.Task.Source["type"] == "scheduled_job"
+	scopedFullTaskHistory := scopedOwnerTask || scopedScheduledTask
+	if prepared.Task != nil && (scopedFullTaskHistory || prepared.Task.Source["type"] == "initiative" && prepared.Task.Source["mobile_batch_id"] != nil) {
 		reader, ok := s.transcript.(interface {
 			GetTaskTranscript(context.Context, string, string) (transcript.Transcript, error)
 		})
@@ -383,7 +385,7 @@ func (s *Service) attachTranscriptContext(ctx context.Context, sessionKey string
 		}
 		messages := full.Messages[:0]
 		for _, m := range full.Messages {
-			if prepared.CurrentRunID != "" && m.RunID == prepared.CurrentRunID && m.Role == "user" && (!scopedOwnerTask || transcript.MessageKind(m.MetadataJSON) != "interaction_response") {
+			if prepared.CurrentRunID != "" && m.RunID == prepared.CurrentRunID && m.Role == "user" && (!scopedFullTaskHistory || transcript.MessageKind(m.MetadataJSON) != "interaction_response") {
 				prepared.InputAlreadyRecorded = true
 				continue
 			}
@@ -394,6 +396,9 @@ func (s *Service) attachTranscriptContext(ctx context.Context, sessionKey string
 		mode := "mobile_task_history"
 		if scopedOwnerTask {
 			mode = "owner_goal_task_history"
+		}
+		if scopedScheduledTask {
+			mode = "scheduled_task_history"
 		}
 		prepared.observabilityHistory = map[string]any{"replayed_message_count": len(items), "coverage_mode": mode, "source_revision": full.SourceRevision}
 		return nil

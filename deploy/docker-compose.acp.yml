@@ -1,0 +1,66 @@
+services:
+  acp-egress:
+    image: butler-acp-runtime:1.5.9
+    restart: unless-stopped
+    entrypoint: ["/usr/local/bin/acp-runtime", "-egress", "-socket", "/run/egress/proxy.sock"]
+    read_only: true
+    user: "10001:10001"
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    pids_limit: 32
+    mem_limit: 128m
+    cpus: 0.5
+    volumes:
+      - acp-egress:/run/egress
+    networks: [acp-google]
+
+  acp-runtime:
+    image: butler-acp-runtime:1.5.9
+    restart: unless-stopped
+    command:
+      - -sha256
+      - "39816d49d5ab92229952987225c23ea3fed7580699dcb4a444e0388e0ac1ce43"
+      - -model
+      - "${BUTLER_ANTIGRAVITY_ACP_MODEL:-gemini-3.8-flash}"
+      - -egress-socket
+      - /run/egress/proxy.sock
+    read_only: true
+    user: "10001:10001"
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    pids_limit: 96
+    mem_limit: 1g
+    cpus: 2
+    network_mode: none
+    tmpfs:
+      - /tmp:rw,exec,nosuid,nodev,size=256m,mode=1777
+    volumes:
+      - acp-control:/run/acp
+      - acp-profile:/profile
+      - acp-egress:/run/egress:ro
+    depends_on: [acp-egress]
+
+  orchestrator:
+    environment:
+      BUTLER_MODEL_PROVIDER: antigravity-acp
+      BUTLER_ANTIGRAVITY_ACP_ENABLED: "true"
+      BUTLER_ANTIGRAVITY_ACP_MODEL: "${BUTLER_ANTIGRAVITY_ACP_MODEL:-gemini-3.8-flash}"
+      BUTLER_ANTIGRAVITY_ACP_SOCKET: /run/acp/agent.sock
+      BUTLER_EXECUTION_BUDGET_POLICY_JSON: "${BUTLER_EXECUTION_BUDGET_POLICY_JSON:?Explicit ACP subscription-agent policy is required}"
+    volumes:
+      - acp-control:/run/acp:ro
+    depends_on:
+      acp-runtime:
+        condition: service_started
+
+  tool-broker:
+    environment:
+      BUTLER_EXECUTION_BUDGET_POLICY_JSON: "${BUTLER_EXECUTION_BUDGET_POLICY_JSON:?Core and Broker must use the same policy}"
+
+volumes:
+  acp-control:
+  acp-profile:
+  acp-egress:
+
+networks:
+  acp-google:

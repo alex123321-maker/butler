@@ -128,6 +128,12 @@ execution policy. It does not keep the creation run alive or restore a provider
 session. The ordinary Session/Input/Core path chooses current transport/context,
 checks model budget/privacy and sends every tool proposal through Broker.
 
+Scheduled tasks load their own complete task transcript, including earlier
+attempts and exact owner interaction replies. They do not replay unrelated
+messages from the shared creation conversation. The current instruction is
+included once. Complete transcript revision/privacy guards, current constraints,
+authority, unknown-effect history and the original context budget remain intact.
+
 One unfinished input per schedule prevents overlap. A completed/failed/expired/
 cancelled attempt releases overlap; an unverified Task may remain active and
 does not indefinitely prevent recurrence. Waiting/blocked inputs still hold it.

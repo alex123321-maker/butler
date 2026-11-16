@@ -20,6 +20,20 @@ type fakeProviderAuthManager struct {
 	startCalled bool
 }
 
+func TestProviderServerACPDoesNotInventConnectionOrOAuth(t *testing.T) {
+	manager := &fakeProviderAuthManager{}
+	server := NewProviderServer(manager, modelprovider.ProviderAntigravityACP, map[string]string{modelprovider.ProviderAntigravityACP: "gemini-fixture"}, false)
+	state, err := server.state(context.Background(), modelprovider.ProviderAntigravityACP)
+	if err != nil || !state.Active || state.Connected || state.AuthKind != "dedicated_cli" || state.Pending != nil || state.Model != "gemini-fixture" {
+		t.Fatal("operator status misrepresents runtime auth", state, err)
+	}
+	response := httptest.NewRecorder()
+	server.HandleItem().ServeHTTP(response, httptest.NewRequest(http.MethodPost, "/api/v1/providers/antigravity-acp/auth/start", strings.NewReader(`{}`)))
+	if manager.startCalled {
+		t.Fatal("ACP exposed unsupported web OAuth")
+	}
+}
+
 func (f *fakeProviderAuthManager) List(context.Context) ([]providerauth.ProviderState, error) {
 	return append([]providerauth.ProviderState(nil), f.listState...), nil
 }

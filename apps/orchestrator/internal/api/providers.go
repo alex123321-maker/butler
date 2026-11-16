@@ -64,6 +64,10 @@ func (s *ProviderServer) HandleItem() http.Handler {
 			return
 		}
 		provider := parts[0]
+		if provider == modelprovider.ProviderAntigravityACP && r.Method != http.MethodGet {
+			writeJSON(w, http.StatusBadRequest, map[string]string{"error": "ACP login is managed through the isolated private operator runtime"})
+			return
+		}
 		if provider == modelprovider.ProviderAntigravity && r.Method == http.MethodPost {
 			writeJSON(w, http.StatusBadRequest, map[string]string{"error": "Antigravity credentials must be imported through the private operator control plane"})
 			return
@@ -157,10 +161,16 @@ func (s *ProviderServer) states(ctx context.Context) ([]providerDTO, error) {
 	for _, state := range states {
 		items = append(items, toProviderDTO(state, s.models[state.Provider], state.Provider == s.activeProvider))
 	}
+	if s.activeProvider == modelprovider.ProviderAntigravityACP {
+		items = append(items, providerDTO{Name: modelprovider.ProviderAntigravityACP, Model: s.models[modelprovider.ProviderAntigravityACP], Active: true, AuthKind: "dedicated_cli"})
+	}
 	return items, nil
 }
 
 func (s *ProviderServer) state(ctx context.Context, provider string) (providerDTO, error) {
+	if provider == modelprovider.ProviderAntigravityACP && s.activeProvider == provider {
+		return providerDTO{Name: provider, Model: s.models[provider], Active: true, AuthKind: "dedicated_cli"}, nil
+	}
 	if provider == modelprovider.ProviderOpenAI {
 		return providerDTO{Name: provider, Model: s.models[provider], Active: s.activeProvider == provider, Connected: s.openAIReady, AuthKind: "api_key"}, nil
 	}

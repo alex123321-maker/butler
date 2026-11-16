@@ -35,7 +35,7 @@ type ConverterContinuations struct {
 var errContinuationParentBusy = errors.New("continuation parent is still owned")
 
 func NewConverterContinuations(pool *pgxpool.Pool, tasks *task.Store, inputs *durableinput.Store, sources *catalog.Store, budgets *budget.Controller, a budget.ModelAllowance, profile generatedtools.Profile) (*ConverterContinuations, error) {
-	if pool == nil || tasks == nil || inputs == nil || sources == nil || budgets == nil || profile.Validate() != nil || a.InputTokens <= 0 || a.OutputTokens != budgets.Policy.OutputTokens {
+	if pool == nil || tasks == nil || inputs == nil || sources == nil || budgets == nil || profile.Validate() != nil || a.Validate(budgets.Policy) != nil || !a.Agent && a.OutputTokens != budgets.Policy.OutputTokens {
 		return nil, generatedtools.ErrAccess
 	}
 	var ready bool

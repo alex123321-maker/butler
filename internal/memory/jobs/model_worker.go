@@ -113,6 +113,24 @@ func (s *Store) modelReady(ctx context.Context) (bool, error) {
 }
 
 func (w *ModelWorker) quote() (budget.Units, error) {
+	if w.Provider != nil && w.Provider.Name() == "antigravity-acp" {
+		limits, ok := w.Provider.(interface {
+			AgentExecutionLimits() transport.AgentExecutionLimits
+		})
+		if !ok || !limits.AgentExecutionLimits().Valid() {
+			return budget.Units{}, ErrClaim
+		}
+		p := w.Jobs.budgets.Policy
+		if p.ModelMillis > 300000 {
+			p.ModelMillis = 300000
+		}
+		quote, err := p.AgentQuote(w.Provider.Name(), w.Model)
+		bound := limits.AgentExecutionLimits()
+		if err != nil || quote.ActiveMillis < bound.WallTime.Milliseconds() || quote.ProviderInputBytes < bound.InputBytes || quote.EgressBytes < bound.OutputBytes {
+			return budget.Units{}, ErrClaim
+		}
+		return quote, nil
+	}
 	// Only the current native adapter has verified limits and an actual HTTP
 	// authority hook. Price (including subscription) never proves local execution.
 	if w.Provider == nil || w.Provider.Name() != "antigravity" {
@@ -163,6 +181,9 @@ func (w *ModelWorker) Admit(ctx context.Context, j Job, handlers ...ModelHandler
 	if e != nil {
 		return a, nil, e
 	}
+	if (p.AccountingMode == "opaque_subscription") != (w.Provider.Name() == "antigravity-acp") {
+		return a, nil, &waitReason{"accounting_mode_mismatch"}
+	}
 	if p.Privacy != "cloud_allowed" {
 		return a, nil, &waitReason{"local_backend_unavailable"}
 	}
@@ -189,7 +210,11 @@ func (w *ModelWorker) Admit(ctx context.Context, j Job, handlers ...ModelHandler
 			additionalTasks = append(additionalTasks, budget.AuxiliaryTaskIdentity{TaskID: pin.TaskID, MandateID: pin.Authority.MandateID})
 		}
 	}
-	admission, e := s.budgets.ReserveAuxiliaryTx(ctx, tx, budget.AuxiliaryIdentity{OwnerID: j.OwnerID, TaskID: j.TaskID, MandateID: j.Authority.MandateID, JobID: j.ID, OperationID: op, Limits: j.Allowance, Deadline: j.Deadline, InputBytes: quote.ProviderInputBytes, Tokens: quote.Tokens, ActiveMillis: quote.ActiveMillis, Quote: &quote, PolicyID: p.ID, PolicyLimits: p.Job.Allowance, PolicyDeadline: p.Job.Deadline, AdditionalTasks: additionalTasks})
+	var agent *budget.ModelAllowance
+	if w.Provider.Name() == "antigravity-acp" {
+		agent = &budget.ModelAllowance{Provider: w.Provider.Name(), Model: w.Model, Agent: true}
+	}
+	admission, e := s.budgets.ReserveAuxiliaryTx(ctx, tx, budget.AuxiliaryIdentity{OwnerID: j.OwnerID, TaskID: j.TaskID, MandateID: j.Authority.MandateID, JobID: j.ID, OperationID: op, Limits: j.Allowance, Deadline: j.Deadline, InputBytes: quote.ProviderInputBytes, Tokens: quote.Tokens, ActiveMillis: quote.ActiveMillis, Quote: &quote, Agent: agent, PolicyID: p.ID, PolicyLimits: p.Job.Allowance, PolicyDeadline: p.Job.Deadline, AdditionalTasks: additionalTasks})
 	if e != nil {
 		return a, nil, e
 	}
@@ -681,7 +706,11 @@ func (w *ModelWorker) execute(ctx context.Context, j Job, h ModelHandler) (err e
 				if event.Usage.Validate() != nil {
 					return ErrClaim
 				}
-				inputLimit, outputLimit := w.Provider.(interface{ InferenceLimits() (int64, int64) }).InferenceLimits()
+				limits, ok := w.Provider.(interface{ InferenceLimits() (int64, int64) })
+				if !ok {
+					return ErrClaim
+				} // Opaque usage cannot become fabricated native observations.
+				inputLimit, outputLimit := limits.InferenceLimits()
 				u := event.Usage
 				exceeded := int64(u.InputTokens) > inputLimit || int64(u.OutputTokens) > outputLimit || int64(u.TotalTokens) > a.Quote.Tokens || u.TotalTokens > 0 && int64(u.TotalTokens-u.InputTokens) > outputLimit
 				if usage != nil && *usage != *event.Usage {

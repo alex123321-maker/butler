@@ -25,6 +25,16 @@ without cloud fallback. See [the full contract](../../../docs/architecture/backg
 The `Admit`/`LocalTarget` description below remains the existing local path;
 `ModelWorker.Admit` is the separately checked generative path.
 
+Background ACP admission uses an explicit immutable policy
+`accounting_mode: opaque_subscription`. It reserves finite prompts, wall time,
+input and output bytes under the exact operator subscription basis. Native
+tokens remain NULL; unexpected usage cannot be interpreted using fabricated
+token limits. Existing missing/`tokens` policies retain their meaning and wait
+with `accounting_mode_mismatch` when the selected backend differs. Neither
+mode switching nor cancellation refunds reservations or resets policy history.
+The owner read model exposes this accounting mode. This admission contract alone
+does not qualify summary, extraction, consolidation or experience consumers.
+
 Migration076 adds exact owner-approved context manifests only for
 `memory-consolidation-v1`. At most eight quiet sessions retain their terminal run,
 root task/constraints/assignment/privacy pins. Top-level task/run bindings remain

@@ -14,6 +14,7 @@ import (
 type ModelAllowance struct {
 	Provider, Model           string
 	InputTokens, OutputTokens int64
+	Agent                     bool
 }
 
 // CheckRootAdmissionTx lets the owning initiative service defer currently
@@ -22,7 +23,7 @@ type ModelAllowance struct {
 // transaction cannot authorize a provider request. Caller has checked current
 // assignment and holds mandate/goal locks before taking budget locks.
 func (c *Controller) CheckRootAdmissionTx(ctx context.Context, tx pgx.Tx, ownerID string, m MandateScope, a ModelAllowance) error {
-	if m.ID == "" || ownerID == "" || m.OwnerID != ownerID || a.InputTokens <= 0 || a.OutputTokens <= 0 || a.OutputTokens > c.Policy.OutputTokens {
+	if m.ID == "" || ownerID == "" || m.OwnerID != ownerID || a.Validate(c.Policy) != nil {
 		return ErrInvalid
 	}
 	if m.Privacy != "cloud_allowed" {
@@ -35,7 +36,7 @@ func (c *Controller) CheckRootAdmissionTx(ctx context.Context, tx pgx.Tx, ownerI
 // no broad mandate to use ordinary root/day bounds. It creates no reservation or
 // permission; actual model/effect admission remains unchanged.
 func (c *Controller) CheckScheduledRootAdmissionTx(ctx context.Context, tx pgx.Tx, ownerID string, m *MandateScope, a ModelAllowance) error {
-	if c == nil || ownerID == "" || a.InputTokens <= 0 || a.OutputTokens <= 0 || a.OutputTokens > c.Policy.OutputTokens {
+	if c == nil || ownerID == "" || a.Validate(c.Policy) != nil {
 		return ErrInvalid
 	}
 	if m != nil {

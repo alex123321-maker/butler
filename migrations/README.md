@@ -1,5 +1,10 @@
 # Migrations
 
+`112_acp_subscription_budget` admits not-applicable zero token allowances only
+for the separate `antigravity-acp` provider. Observed token columns stay NULL.
+No spending or old attempt is rewritten. Application rollback retains this
+additive schema; down refuses retained opaque ACP attempts.
+
 `107_browser_pages` adds bounded-page metadata storage under the existing
 server-browser context ownership/fence. The private Store applies limits/CAS;
 SQL retains identities and terminal rows and rejects nonmonotonic updates.
